@@ -1,0 +1,47 @@
+{
+	"project_info": {
+	  "project_number": "565862727921",
+	  "project_id": "hospital-management-syst-996a1",
+	  "storage_bucket": "hospital-management-syst-996a1.appspot.com"
+	},
+	"client": [
+	  {
+		"client_info": {
+		  "mobilesdk_app_id": "1:565862727921:android:48797a486288e9ce20a950",
+		  "android_client_info": {
+			"package_name": "com.hmsapp"
+		  }
+		},
+		"oauth_client": [
+		  {
+			"client_id": "565862727921-qbr2mk2mn3h7nndudqurk66d0hlal4rl.apps.googleusercontent.com",
+			"client_type": 1,
+			"android_info": {
+			  "package_name": "com.hmsapp",
+			  "certificate_hash": "61ced0bf19103337da9e18b075502c7f79a91a52"
+			}
+		  },
+		  {
+			"client_id": "565862727921-ik75svscqcbav7gumgrjc6jb82bghe0p.apps.googleusercontent.com",
+			"client_type": 3
+		  }
+		],
+		"api_key": [
+		  {
+			"current_key": "AIzaSyCUvz-YK7bVJFi7tImTy8NabC0eFJgCr8g"
+		  }
+		],
+		"services": {
+		  "appinvite_service": {
+			"other_platform_oauth_client": [
+			  {
+				"client_id": "565862727921-ik75svscqcbav7gumgrjc6jb82bghe0p.apps.googleusercontent.com",
+				"client_type": 3
+			  }
+			]
+		  }
+		}
+	  }
+	],
+	"configuration_version": "1"
+  }
