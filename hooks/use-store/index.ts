@@ -5,37 +5,31 @@ import randomUUUID from '../../utils/UUUID';
 
 export const useStore = () => {
 	
-	const queryDoc = (
+	const queryDoc =useCallback((
 		path: string,
-		callback?: (data?: any, verified?: boolean) => void,
-		extras?: any,
-	) => {
-		firestore()
-			.doc(path)
-			.get()
-			.then((doc) => {
-				if (doc.exists) {
-					const data = doc.data();
-					console.log('queryDoc data ', data);
+	) => firestore()
+		.doc(path)
+		.get()
+		.then((doc) => {
+			if (doc.exists) {
+				const data = doc.data();
+				console.log('queryDoc data ', data);
 
-					let payload = {
-						...data,
-						timestamp: data.timestamp
-							? data.timestamp.toDate().toString()
-							: null,
-						
-					};
-					console.log('queryDoc data ', data);
-					callback(payload, extras);
-				} else {
-					callback();
-				}
-			})
-			.catch((e) => {
-				console.log('DocError', e);
-				callback();
-			});
-	};
+				return {
+					...data,
+					id:doc.id,
+					timestamp: data.timestamp
+						? data.timestamp.toMillis()
+						: null,
+				};
+			} else {
+				return {};
+			}
+		})
+		.catch((e) => {
+			console.log('DocError', e);
+			return {};
+		}),[]);
 	const deleteFBDocs = async (docIds: string[], callback?: () => void) => {
 		console.log('docIds ', docIds.length);
 
@@ -65,17 +59,12 @@ export const useStore = () => {
 
 			const _id = !isEmpty(id) ? id : randomUUUID();
 			const fieldId=`${pathName.toLowerCase()}Id`
-			const newRecord = picker
-				? {
-						[fieldId]:_id,
-						...pick(data, picker),
-				  }
-				: data;
+			const newRecord = picker? pick(data, picker): data;
 			console.log('check path ', pathName);
 
 			await firestore()
 				.doc(`${pathName}/${_id}`)
-				.set(newRecord, { merge: true });
+				.set({...newRecord,[fieldId]:_id}, { merge: true });
 
 			if (callback) {
 				callback();

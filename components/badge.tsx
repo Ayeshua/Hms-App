@@ -35,7 +35,7 @@ const Badge = (
 			backgroundColor: bg || 'red',
 		}}
 	>
-		<Text style={{ color: '#fff' }} variant='bodySmall'>
+		<Text style={{ color: '#fff' }} variant='bodyLarge'>
 			{`${num}`}
 		</Text>
 	</TouchableOpacity>

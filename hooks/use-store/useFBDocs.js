@@ -1,30 +1,24 @@
 import { useEffect } from 'react';
 import firestore from '@react-native-firebase/firestore';
-import { useSelector } from 'react-redux';
 import { reorder } from '../../utils/reorder';
 
 const useFBDocs = (form, callback) => {
-	const userId = useSelector(
-		({
-			login: {
-				user: { userId },
-			},
-		}) => userId,
-	);
+	
 	useEffect(() => {
 		(async () => {
 			if (form) {
 				let allDocs = [];
 				console.log('startSearch useFBDocs ', form);
 				const {
-					path: pathName,
+					path: _path,
 					lastDoc,
 					boolValue,
 					secValue,
 					lim,
 					group,
+					timestamp1,
+					timestamp2,
 				} = form;
-				const _path = pathName.replace('<uid>', userId);
 				console.log('startSearch path ', _path);
 
 				let q;
@@ -44,6 +38,12 @@ const useFBDocs = (form, callback) => {
 					q = q.where(value, operation, key);
 				}
 				q = q.orderBy('timestamp', 'desc');
+				if(timestamp1&&timestamp2){
+					const timestamp_prev =  firestore.Timestamp.fromDate(timestamp1);
+					const timestamp_nxt = new firestore.Timestamp.fromDate(timestamp2);
+					q=q.where('timestamp', '>', timestamp_prev)
+					  	.where('timestamp', '<', timestamp_nxt)
+				}
 				if (lastDoc) {
 					const afterDoc = await firestore().doc(`${_path}/${lastDoc}`).get();
 
@@ -68,17 +68,23 @@ const useFBDocs = (form, callback) => {
 								if (type === 'added' || type === 'modified') {
 
 									payload = doc.data();
+									const {timestamp,scheduleDate}=payload
 									payload = {
 										...payload,
+										id,
 										ref: path,
 										timestamp:
 											payload.timestamp &&
-											typeof payload.timestamp.toDate === 'function'
-												? payload.timestamp.toDate().toString()
+											typeof timestamp.toDate === 'function'
+												? timestamp.toMillis()
 												: null,
-										order: new Date(payload.timestamp.toDate()).getTime(),
+										scheduleDate:
+											scheduleDate &&
+											typeof scheduleDate.toDate === 'function'
+												? scheduleDate.toMillis()
+												: null,
+										order: new Date(scheduleDate?.toDate()||timestamp?.toDate()).getTime(),
 									};
-									
 								}
 
 								if (type === 'added') {

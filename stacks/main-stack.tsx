@@ -1,13 +1,12 @@
-import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProStack } from './pro-stack';
 import AppStack from './app-stack';
 
-import { colors } from '../theme/colors';
-import AddPost from '../screens/home/add-post';
+import AddPost from '../screens/home/appointment-list';
 import { useSelector } from 'react-redux';
 import { RootState } from '../data/redux/store';
 import Info from '../screens/info';
+import Subs from "../screens/Subs";
 
 const Stack = createNativeStackNavigator();
 const MainStack = () => {
@@ -34,7 +33,8 @@ const MainStack = () => {
 			component={ProStack} 
 		 />
 		<Stack.Screen name='Info' component={Info} />
-		<Stack.Screen name='AddPost' component={AddPost} />
+		<Stack.Screen name='Subs' component={Subs} />
+		<Stack.Screen name='Appointment List' component={AddPost} />
 		
 	</Stack.Navigator>
   )

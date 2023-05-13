@@ -1,87 +1,76 @@
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import * as Linking from 'expo-linking';
 import { Image } from 'expo-image';
-import { colors } from '../theme/colors';
 import { screenStyles } from '../styles';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ParsedText from 'react-native-parsed-text';
 import { renderText } from '../utils/renderText';
+import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 const ratio = 228 / 362;
-export const CARD_WIDTH = width * 0.8;
+export const CARD_WIDTH = width * 0.9;
 export const CARD_HEIGHT = CARD_WIDTH * ratio;
-
-const { Indigo, blue, violet, ORANGE, red, gold } = colors;
-const rainbow = [violet, Indigo, blue, ORANGE, red];
 
 const Card = ({ 
 	info, 
+	moreInfo,
 	url,
-	whiteBg,
-	customStyle,
+	customStyle={},
 	cardClick,
-	iconClick,
-	iconName='card-account-phone' 
+	iconName='account-box-outline' 
 }
 :
 {
 	info:string;
 	url:string;
 	iconName?:string;
-	whiteBg?:boolean;
-	customStyle?:any;
-	cardClick?:()=>void;
-	iconClick?:()=>void
+	moreInfo?:string;
+	customStyle?:{};
+	cardClick?:(flag?:number,id?:string,col?:string)=>void;
 }) => {
-	const colors = useMemo(() => {
-		const newArr = [];
-		for (let index = 0; index < rainbow.length; index++) {
-			newArr.push(rainbow[Math.floor(Math.random() * 4)]);
-		}
-		return !whiteBg?newArr:['#fff','#fff'];
-	}, [whiteBg]);
+	console.log('moreInfo ',moreInfo,' info ',info);
+	
+	const handleUrlPress=(url:string)=> {
+		Linking.openURL(url.includes('http')?url:`https://${url}`);
+	}
+	const handleInfoPress = (matchingString:string,regex:any,flag:number) => {
+		const match = matchingString.match(regex);
+		console.log('name ', matchingString, ' matchIndex ', match);
+		cardClick(flag,match[2],match[1])
+		//AlertIOS.alert(`Hello ${name}`);
+	};
 	return (
 		<TouchableOpacity 
-			onPress={()=>{
-
-				if(cardClick) cardClick()
-			}
-			}
-			style={{...styles.card,...customStyle}}
+			disabled
+			style={{
+				...styles.card,
+				...customStyle,
+				borderRadius: 10,
+				justifyContent: 'center',
+				shadowOffset: {
+					width: 10,
+					height: 15,
+				},
+				shadowOpacity: 0.25,
+				shadowRadius: 5.5,
+				elevation: 5,
+				padding:16,
+			}}
 		>
-			<LinearGradient
-				// Background Linear Gradient
-				{...{ colors }}
-				start={[0.3, 0.5]}
-				end={[0.5, 0.3]}
-				style={{
-					flex: 1,
-					borderRadius: 10,
-					height: '100%',
-					width: '100%',
-					alignItems: 'center',
-					justifyContent: 'center',
-				}}
-			>
-				<BlurView intensity={130}>
+			
 					<View
 						style={{
 							...screenStyles.row,
-							width: '100%',
+							alignSelf:'center',
 							alignItems: 'center',
 							justifyContent: 'flex-start',
-							borderColor: '#fff',
-							borderWidth: 2,
+							
 						}}
 					>
 						<TouchableOpacity
-							onPress={()=>{
-
-								if(iconClick) iconClick()
-							}}
+							onPress={()=>cardClick(2)}
 						>
 
 							{url?<Image 
@@ -91,12 +80,12 @@ const Card = ({
 								<MaterialCommunityIcons
 								name={iconName}
 								size={50}
-								color={gold}
+								color={colors.gold}
 								style={{ marginHorizontal: 10 }}
 							/>}
 						</TouchableOpacity>
 						<ParsedText
-							style={{ ...screenStyles.text, paddingRight: 10 }}
+							style={{ ...screenStyles.text }}
 							parse={[
 								{
 									pattern: /\*([^,*]+)\*/i,
@@ -104,18 +93,61 @@ const Card = ({
 									renderText,
 								},
 								{
-									pattern: /\:([^,*]+)\:/i,
+									pattern: /\<\<([^,*]+)\>\>/i,
 									style: screenStyles.text10,
 									renderText,
 								},
+								{
+									pattern:  /\[([^:]+):([^\]]+)\]/i,
+									style: {...screenStyles.txtBlue,...screenStyles.bold},
+									renderText,
+									onPress: (matchingString)=> handleInfoPress(matchingString,/\[([^:]+):([^\]]+)\]/i,1),
+								},
 							]}
-							childrenProps={{ allowFontScaling: false }}
 						>
 							{info}
 						</ParsedText>
 					</View>
-				</BlurView>
-			</LinearGradient>
+				<ParsedText
+							style={{ ...screenStyles.text, padding: 10 }}
+							parse={[
+								{
+									pattern: /\*([^,*]+)\*/i,
+									style: screenStyles.bold,
+									renderText,
+								},
+								{
+									pattern: /~([^,*]+)~/i,
+									style: {color:colors.tertiary},
+									renderText,
+								},
+								{
+									pattern: /\<\<([^,*]+)\>\>/i,
+									style: screenStyles.text10,
+									renderText,
+								},
+								{
+									type: 'url',                       
+									style: screenStyles.txtBlue,
+									 onPress: handleUrlPress
+								},
+
+								{
+									pattern:  /\[([^:]+):([^\]]+)\]/i,
+									style: {...screenStyles.txtBlue,...screenStyles.bold},
+									renderText,
+									onPress:(matchingString)=> handleInfoPress(matchingString,/\[([^:]+):([^\]]+)\]/i,1),
+								},
+								{
+									pattern:  /\{\{([^:]+):([^\]]+)\}\}/i,
+									style: {...screenStyles.txtBlue},
+									renderText,
+									onPress:(matchingString)=> handleInfoPress(matchingString,/\{\{([^:]+):([^\]]+)\}\}/i,3),
+								},
+							]}
+						>
+							{moreInfo}
+						</ParsedText>
 		</TouchableOpacity>
 	);
 };
@@ -125,5 +157,6 @@ const styles = StyleSheet.create({
 	card: {
 		width: CARD_WIDTH,
 		height: CARD_HEIGHT,
+		margin:'5%',
 	},
 });

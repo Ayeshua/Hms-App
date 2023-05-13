@@ -18,12 +18,11 @@ import { colors } from '../../theme/colors';
 import { useStore } from '../../hooks/use-store';
 import { setUser } from '../../data/redux/slices/login';
 import { useFunc } from '../../hooks/functions/useFunc';
-import { reorder } from '../../utils/reorder';
 import { useMe } from '../../hooks/useMe';
 import Badge from '../../components/badge';
 
 const ImageBoarding = ({ navigation, route: { params } }) => {
-	const { start } = params || {};
+	const { start,imgUrl } = params || {};
 	const pos = useRef(0);
 	const { user } = useSelector(({ login }) => login);
 	const [files, setFiles] = useState({});
@@ -32,22 +31,15 @@ const ImageBoarding = ({ navigation, route: { params } }) => {
 	const { addModData } = useStore();
 	const { callFunc } = useFunc();
 	const { _updatePhotoUrl } = useMe();
-	const images = useMemo(() => {
-		if (start) {
-			const imgs = reorder(profileImages, 0, profileImages[start]);
-			return reorder(imgs, start, profileImages[0]);
-		} else {
-			return profileImages;
-		}
-	}, [start]);
-	const urls = useMemo(() => images.map(({ value }) => value), [images]);
+	
+	const urls = useMemo(() => profileImages.map(({ value }) => value), []);
 	const setProgCallback = (prog, val) => {
 		console.log('val ',val );
 		
 		setValue(val);
 	};
 	const setStatus=async(payload:any,path:string)=>{
-		const {status,createdAt, userId,email}=payload
+		const {status, userId,email}=payload
 		if (!start && status === 3) {
 			setValue(0)
 			await callFunc({ email, payload:{status} }, 'addCustom');
@@ -109,20 +101,20 @@ const ImageBoarding = ({ navigation, route: { params } }) => {
 		}
 	};
 	const onBoarding = useMemo(() => {
-		return images.reduce((cal, item) => {
+		return profileImages.reduce((cal, item) => {
 			const { value, title } = item;
 
 			return [
 				...cal,
 				{
 					uri: files[value],
-					url: user[value] || url,
+					url: (start?imgUrl: user[value]) || url,
 
 					title,
 				},
 			];
 		}, []);
-	}, [files, user]);
+	}, [files, user,start,imgUrl]);
 
 	useEffect(
 		() =>
@@ -153,33 +145,36 @@ const ImageBoarding = ({ navigation, route: { params } }) => {
 					stat={false}
 				/>
 			</View>
-			<ProgHolder
-				{...{
-					payload: {
-						name: 'pencil-circle',
-						color: colors.primary,
-						size: 54,
-						bg: '#fff',
-					},
-					width: '100%',
-					value,
-					justifyContent: 'center',
-				}}
-				//width={60}
-				onClick={elementPressed}
-			/>
-			<Badge
-				{...{
-					borderRadius:  10,
-					bg: colors.primary,
-					right: 30,
-					bottom: 30,
-					num: `>`,
-					size: 30,
-					disabled:false,
-					onClick:()=>setStatus({...user,status:Math.max(3,user.status)},!start?'start':null)
-				}}
-			/>
+			{start!==1&&<>
+			
+				<ProgHolder
+					{...{
+						payload: {
+							name: 'pencil-circle',
+							color: colors.primary,
+							size: 54,
+							bg: '#fff',
+						},
+						width: '100%',
+						value,
+						justifyContent: 'center',
+					}}
+					//width={60}
+					onClick={elementPressed}
+				/>
+				<Badge
+					{...{
+						borderRadius:  10,
+						bg: colors.primary,
+						right: 30,
+						bottom: 30,
+						num: `>`,
+						size: 30,
+						disabled:false,
+						onClick:()=>setStatus({...user,status:Math.max(3,user.status)},!start?'start':null)
+					}}
+				/>
+			</>}
 		</View>
 	);
 };

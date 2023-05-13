@@ -36,7 +36,11 @@ export const subText = (text, lim = 88) => {
 		return sub;
 	}
 };
-
+export const appendText=(arrText)=>{
+	return arrText.reduce((cal,val)=>{
+		return `${cal}${val}`
+	},'')
+}
 export const NestedObjToString = (data) => {
 	return Object.entries(data).reduce((cal, val) => {
 		const [key, value] = val;
@@ -60,12 +64,11 @@ export const NestedObjToInfoString = (data) => {
 		const [key, value] = val;
 		let str=''
 		if (value) {
-
-			const checkColon=key==='pronouns'
-			if(checkColon){
-				cal.replace(/([:]+$)/,'')
-			}
-			str = `${`${key === 'name'?`*${startCase(value)}*`:key === 'agender' ? `${checkColon?'':':'}${value}:` :key === 'email' ? value : startCase(value)}`}`;
+			str = key === 'timestamp'||key === 'email'||key === 'id'||key === 'link'||key === 'next'|| /\{\{([^:]+):([^\]]+)\}\}/i.test(value)|| /\[([^:]+):([^\]]+)\]/i.test(value)|| /~([^,*]+)~/i.test(value) ? value 
+			: 
+			`${`${key === 'name'||key === 'label'||key === 'title'||key === 'status'?`*${startCase(value)}*`
+			:
+			key === 'agender'||key === 'BookedDate' ? `<<${value}>>` : startCase(value)}`}`;
 		}
 		if(str){
 
@@ -74,5 +77,5 @@ export const NestedObjToInfoString = (data) => {
 		}else{
 			return cal
 		}
-	}, '');
+	}, '').trim();
 };

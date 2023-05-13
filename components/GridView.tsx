@@ -4,6 +4,7 @@ import { screenStyles } from '../styles';
 import Card from './card';
 import GridItem from './GridItem';
 import { Text } from 'react-native-paper';
+import CalendarView from './calendar-view';
 const { width } = Dimensions.get('screen');
 
 const GridView = ({
@@ -14,12 +15,15 @@ const GridView = ({
 	loadMore,
 	selected = [],
 	numColumns,
-	resizeMode = 'cover',
+	itemBtns,
 	horizontal,
 	host,
 	header,
+	calendarData,
 	onViewableItemsChanged,
-	topItem
+	topItem,
+	screenName,
+	onCalendarEvent
 }: {
 	profileInfo: any[];
 	onClickFun: (res: { index: number; num: number }) => void;
@@ -30,12 +34,15 @@ const GridView = ({
 	isLoading?: boolean;
 	isSpinner?: boolean;
 	loadMore?: () => void;
+	onCalendarEvent?: (timestamp:number,flag?:boolean) => void;
 	selected?: any[];
 	numColumns?: number;
-	resizeMode?: string;
+	itemBtns?: boolean;
 	horizontal?: boolean;
 	host?: number;
 	header?:string;
+	screenName?:string;
+	calendarData?:any;
 	topItem?: { info: string; url: string; whiteBg?: boolean; } 
 }) => {
 	const handleItemsPartiallyVisible = (info: {
@@ -66,11 +73,12 @@ const GridView = ({
 	return (
 		<FlatList
 			data={profileInfo}
-			keyExtractor={({ title, _id, userId }) => _id || userId || title}
+			keyExtractor={({ title, id, userId }) => id || userId || title}
 			extraData={{ profileInfo }}
 			style={{backgroundColor:'#fff'}}
 			ListHeaderComponent={()=><>
-				{topItem&&<Card {...{...topItem}} />}
+				{calendarData&&<CalendarView {...{calendarData,isSpinner,onCalendarEvent}} />}
+				{topItem&&<Card {...topItem} />}
 				{header&&    <Text style={{marginVertical:5,marginHorizontal:16}} variant="titleLarge">{header}</Text>
 }
 			</>
@@ -87,64 +95,59 @@ const GridView = ({
 			viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
 			renderItem={({ item, index }) => (
 				<GridItem
-					last={
-						(numColumns &&
-							profileInfo.length - 2 === index &&
-							index % 2 === 0) ||
-						profileInfo.length - 1 === index
-					}
-					payload={item}
-					sel={selected.includes(item.ref) || selected.includes(item.userId)}
-					{...{
-						onClickFun,
-						index,
-						horizontal,
-						orientation: horizontal || numColumns ? 'column' : 'row',
+				last={
+					(numColumns &&
+						profileInfo.length - numColumns === index &&
+						index % numColumns === 0) ||
+					profileInfo.length - 1 === index
+				}
+				payload={{...item,size:itemBtns?22:null}}
+				sel={itemBtns||selected.includes(item.ref) || selected.includes(item.userId)}
+				{...{
+					onClickFun,
+					index,
+					screenName,
+					horizontal,
+					orientation: horizontal || (numColumns&&!itemBtns) ? 'column' : 'row',
+					width: horizontal
+						? width * 0.3
+						: numColumns===2
+						? width * 0.41
+						: numColumns===3
+						? width * 0.31
+						: numColumns===4
+						? width * 0.23
+						: width - 32,
+					host,
+					selected,
+					disabled: host && item.status === 3,
+					marginHorizontal:
+						(horizontal && profileInfo.length - 1 !== index) || numColumns
+							? undefined
+							: 16,
+					marginLeft: numColumns===2 ? '6%' :numColumns===3 ? '2%' :numColumns===4 ? '1.5%': !horizontal ? undefined : 16,
+					marginTop:  numColumns===2 ? '6%' :numColumns===3 ? '2%' :numColumns===4 ? '1.5%':host ? 0 :16,
+					customStyle: {
 						width: horizontal
 							? width * 0.3
-							: numColumns
+							: numColumns===2
 							? width * 0.41
-							: host
-							? width
-							: width - 32,
-						host,
-						selected,
-						marginHorizontal:
-							(horizontal && profileInfo.length - 1 !== index) ||
-							host ||
-							numColumns
-								? undefined
-								: 16,
-						marginLeft: numColumns ? '6%' : !horizontal ? undefined : 16,
-						marginTop: host ? 0 : numColumns ? '6%' : 16,
-						customStyle: {
-							width: horizontal
-								? width * 0.3
-								: numColumns
-								? width * 0.41
-								: host
-								? 30
+							: numColumns===3
+							? width * 0.31
+							: numColumns===4
+							? width * 0.23
 								: width * 0.2,
 							height: horizontal
 								? width * 0.3
-								: numColumns
-								? width * 0.41
-								: host
-								? 30
-								: width * 0.2,
-							contentFit:resizeMode,
-							marginLeft: host ? 16 : 0,
-							borderRadius: item.mode
-								? (horizontal
-										? width * 0.3
-										: numColumns
-										? width * 0.41
-										: host
-										? 30
-										: width * 0.2) / 2
-								: 0,
-						},
-					}}
+								: numColumns===2
+							? width * 0.41
+							: numColumns===3
+							? width * 0.31
+							: numColumns===4
+							? width * 0.23
+							: width * 0.2,
+					},
+				}}
 				/>
 			)}
 		/>

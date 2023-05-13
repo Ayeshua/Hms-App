@@ -16,26 +16,6 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 	console.log('user ', reAuth, ' appIsReady ', appIsReady);
 	const { queryDoc } = useStore();
 	const dispatch = useDispatch();
-
-	const userCallback = (data: any, obj: any) => {
-		console.log('userCallback ', obj, ' data ',data );
-
-		if (data) {
-			console.log('userCallback data ',data );
-
-			dispatch(setUser({ 
-				...data,					
-			...obj 
-		}));
-			/* console.log('userCallback inner', data);
-			setSearchData({
-				path: `users/<uid>/${
-					data.categoryId === 'Teacher' ? 'Schools' : 'staff'
-				}`,
-				subPath: 'users/<uid>',
-			}); */
-		}
-	};
 	// Handle user state changes
 	const onAuthStateChangedFunc = (currentUser: any) => {
 		console.log('currentUser ', currentUser);
@@ -52,15 +32,16 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 				/* const res= await callFunc({ email:currentUser.email, payload:{'status':1} }, 'addCustom');
 				console.log('claim res ',res); */
 				const userId=currentUser.uid
-				const extras = {
+				
+				const payload= await queryDoc(`${categoryId}/${userId}`);
+				dispatch(setUser({ 
+					...payload, 
 					...pick(currentUser, ['uid', 'emailVerified', 'email']),
 					reAuth,
 					status,
 					categoryId,
 					userId
-				};
-				dispatch(setUser({ ...user, ...extras }));
-				queryDoc(`${categoryId}/${userId}`, userCallback, extras);
+				}));
 			});
 		} else {
 			//dispatch(setCurrentMeter(null))

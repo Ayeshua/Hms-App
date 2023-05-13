@@ -16,14 +16,13 @@ import { SheetManager } from 'react-native-actions-sheet';
 import { useFunc } from '../hooks/functions/useFunc';
 
 import { startCase } from 'lodash';
-import Patients from '../screens/patients';
-import Payments from '../screens/Payments';
-import AdminStack from './admin-stack';
-import Prescriptions from '../screens/Prescriptions';
+
+import Admin from '../screens/admin';
 import CommonIcon from '../components/common-icon';
-import NewAppointment from '../screens/new-appointment';
+import {NewAppointment} from '../screens/new-appointment';
 import Info from '../screens/info';
 import Home from '../screens/home';
+import Subs from '../screens/Subs';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,10 +30,10 @@ const AppBottomNavigation = ({ navigation }) => {
 	const {
 		user: { categoryId, name: username, userId, profileUrl, email },
 	} = useSelector((state: RootState) => state.login);
-	const [inputMsg, setinputMsg] = useState<any>();
 	const [showInputModal, setShowInputModal] = useState<boolean>(false);
 	const [name, setname] = useState<string>();
-
+	
+	const [inputMsg, setinputMsg] = useState<any>();
 	const [showConfirmationModal, setShowConfirmationModal] =
 		useState<boolean>(false);
 	const [modalMsg, setmodalMsg] = useState<any>();
@@ -203,7 +202,7 @@ const AppBottomNavigation = ({ navigation }) => {
 		name === 'New Appointment'?0:name !== 'Profile' ? 30 : 60,
 		icons,
 		iconPress,
-		name === 'Profile' || name === 'New Appointment'
+		name !== 'Appointments'
 			? name
 			: 'Hms:App',
 		name !== 'Profile' && name !== 'New Appointment',
@@ -272,7 +271,7 @@ const AppBottomNavigation = ({ navigation }) => {
 								size={25}
 							/>
 						),
-						            tabBarShowLabel: false,
+						tabBarShowLabel: false,
 
 					}}
 					name='Appointments'
@@ -283,22 +282,22 @@ const AppBottomNavigation = ({ navigation }) => {
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='emoticon-sick-outline' color={focused?colors.tertiary:colors.silver} size={25} />
 						),
-						            tabBarShowLabel: false,
+						tabBarShowLabel: false,
 
 					}}
 					name='Patients'
-					component={Patients}
+					component={Subs}
 				/>}
 				{(categoryId==='Patient')&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='medical-bag' color={focused?colors.tertiary:colors.silver} size={25} />
 						),
-						            tabBarShowLabel: false,
+						tabBarShowLabel: false,
 
 					}}
 					name='Prescriptions'
-					component={Prescriptions}
+					component={Subs}
 				/>}
 				{(categoryId==='Patient')&&<Tab.Screen
 					options={{
@@ -336,7 +335,7 @@ const AppBottomNavigation = ({ navigation }) => {
 
 					}}
 					name='Payments'
-					component={Payments}
+					component={Subs}
 				/>}
 				{(categoryId==='Registrar')&&<Tab.Screen
 					options={{
@@ -347,7 +346,7 @@ const AppBottomNavigation = ({ navigation }) => {
 
 					}}
 					name='Staff'
-					component={AdminStack}
+					component={Admin}
 				/>}
 				
 				<Tab.Screen
