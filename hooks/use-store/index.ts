@@ -13,21 +13,38 @@ export const useStore = () => {
 		.then((doc) => {
 			if (doc.exists) {
 				const data = doc.data();
-				const {timestamp,updatedAt}=data
+				const {timestamp,scheduleDate,bookedDate,updatedAt}=data
 				return {
 					...data,
 					id:doc.id,
 					timestamp: timestamp
 						? timestamp.toMillis()
 						: null,
-						updatedAt:
-					updatedAt &&
-					typeof updatedAt.toDate === 'function'
-						? updatedAt.toMillis()
-						: timestamp &&
-						typeof timestamp.toDate === 'function'
-							? timestamp.toMillis()
-							: null,
+						scheduleDate:
+											scheduleDate &&
+											typeof scheduleDate.toDate === 'function'
+												? scheduleDate.toMillis()
+												:  timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
+										updatedAt:
+											updatedAt &&
+											typeof updatedAt.toDate === 'function'
+												? updatedAt.toMillis()
+												: timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
+										bookedDate:
+											bookedDate &&
+											typeof bookedDate.toDate === 'function'
+												? bookedDate.toMillis()
+												: timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
+							
 				};
 			} else {
 				return {};

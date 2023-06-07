@@ -74,7 +74,7 @@ const useFBDocs = (form, callback) => {
 								if (type === 'added' || type === 'modified') {
 
 									payload = doc.data();
-									const {timestamp,scheduleDate,updatedAt}=payload
+									const {timestamp,scheduleDate,bookedDate,updatedAt}=payload
 									payload = {
 										...payload,
 										id,
@@ -88,11 +88,22 @@ const useFBDocs = (form, callback) => {
 											scheduleDate &&
 											typeof scheduleDate.toDate === 'function'
 												? scheduleDate.toMillis()
-												: null,
+												:  timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
 										updatedAt:
 											updatedAt &&
 											typeof updatedAt.toDate === 'function'
 												? updatedAt.toMillis()
+												: timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
+										bookedDate:
+											bookedDate &&
+											typeof bookedDate.toDate === 'function'
+												? bookedDate.toMillis()
 												: timestamp &&
 												typeof timestamp.toDate === 'function'
 													? timestamp.toMillis()

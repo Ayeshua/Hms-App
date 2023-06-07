@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NestedObjToInfoString, appendText } from '../utils/renderText';
 import GridView from '../components/GridView';
 import { useDispatch, useSelector } from 'react-redux';
+import * as Linking from 'expo-linking';
+
 import { backArr, inputBasePayload, profileInfo, subStatus } from '../constants';
 import { reorder } from '../utils/reorder';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,7 +18,6 @@ import { customDateEqual } from '../utils/custom-compare';
 import { setCurrentInfo } from '../data/redux/slices/entities';
 import { useInputSheet } from '../hooks/useInputSheet';
 import randomUUUID from '../utils/UUUID';
-import { Linking } from 'react-native';
 
 const Info = ({ route: { params, name }, navigation }) => {
 	const {
@@ -164,8 +165,9 @@ const Info = ({ route: { params, name }, navigation }) => {
 					})
 				}else if(flag===2){
 					const {link}=currentData
-
-					Linking.openURL(link)
+					console.log('link ',link);
+					
+					Linking.openURL('https://expo.dev');
 				}
 			}
 		}
@@ -261,7 +263,7 @@ const Info = ({ route: { params, name }, navigation }) => {
 							ref: screenName==='Appointment'?null:`{{${prescriptionId||appointmentId}:${screenName==='Payment'?details:'Appointment'}}}\n`,
 							link,
 							scheduleDate:scheduleDate?`📅~${DateTimeFormat(scheduleDate,'dd MMM yyyy')}~ `:null,
-							time: scheduleDate?`@ ${DateTimeFormat(scheduleDate,'HH:mm')}`:null,
+							time: scheduleDate?`\n${DateTimeFormat(scheduleDate,'HH:mm')}`:null,
 							status:status!==undefined?'Status':null,
 							statusVal:status!==undefined?subStatus[screenName].msg[status]:null,
 							name:currency?`${currency}${amount}`:null,
@@ -324,9 +326,13 @@ const Info = ({ route: { params, name }, navigation }) => {
 				const otherInfo=['Doctor','Registrar']
 				for (let index = 0; index < otherInfo.length; index++) {
 					const element = otherInfo[index];
-					const currentId=data[`${element.toLowerCase()}Id`]
+
+					const currentId=currentData[`${element.toLowerCase()}Id`]
+					
 					if(currentId){
 						const payload:any= await queryDoc(`${element}/${currentId}`);
+						console.log('currentId payload ',currentId);
+
 						const {name,speciality}=payload
 						entityRef.current.set(currentId,{...payload,userId:currentId})
 	

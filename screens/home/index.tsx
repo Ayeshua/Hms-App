@@ -40,15 +40,15 @@ const Home = ({navigation}) => {
 	const onClickFun = ({ index }) => {
 		const {title}=payload[index]
 		const {currentTimestamp}=appointments||{}
-		console.log('onClickFun currentTimestamp ',currentTimestamp);
 
 		if(currentTimestamp){
 
-			navigation.navigate('Appointment List',{currentTimestamp,title})
+			navigation.navigate('Appointment List',{currentTimestamp:currentTimestamp||new Date().getTime(),title})
 		}else{
 			ToastAndroid.show('No appointments', ToastAndroid.SHORT);
 
 		}
+		
 	};
 	const onCalendarEvent = (currentTimestamp:number,flag:boolean) => {
 		if(flag){
@@ -56,7 +56,7 @@ const Home = ({navigation}) => {
 				console.log('formatStr ',formatStr);
 			if(appointments.markedDates[formatStr]){
 
-				navigation.navigate('Appointment List',{currentTimestamp})
+				navigation.navigate('Appointment List',{currentTimestamp:currentTimestamp||new Date().getTime(),})
 			}else{
 				ToastAndroid.show('No appointments', ToastAndroid.SHORT);
 

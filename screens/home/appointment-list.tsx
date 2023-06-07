@@ -54,10 +54,10 @@ const Home = ({navigation,route:{params:{currentTimestamp,title}}}) => {
 			const markedItems=new Map()
 			for (let index = 0; index < calendarData.length; index++) {
 				const item = {...calendarData[index],top:26};
-				const {timestamp,status}=item
+				const {timestamp,scheduleDate,status}=item
 				if(!title||keyStatus[title].includes(status)){
 
-					const formatStr=DateTimeFormat(timestamp,'yyyy-MM-dd')
+					const formatStr=DateTimeFormat(scheduleDate||timestamp,'yyyy-MM-dd')
 					console.log('formatStr ',formatStr,' status ',status);
 					const dot=calendarStatus[status]
 					if(marked.has(formatStr)){
@@ -83,6 +83,8 @@ const Home = ({navigation,route:{params:{currentTimestamp,title}}}) => {
 					data:Object.fromEntries(markedItems),
 					updatedAt:new Date().getTime() 
 				}
+				console.log('listItems payload ',payload);
+
 			dispatch(setAppointments({
 				markedDates:Object.fromEntries(marked),
 				updatedAt:new Date().getTime() 
@@ -126,7 +128,7 @@ const Home = ({navigation,route:{params:{currentTimestamp,title}}}) => {
 		loadItemsForMonth={({timestamp}) => {
 			console.log('trigger items loading ',timestamp,);
 			//loadItems(month)
-			startSearch(timestamp)
+			//startSearch(timestamp)
 		  }}
 		  {...appointments}
 		  selected={DateTimeFormat(currentTimestamp,'yyyy-MM-dd')}
