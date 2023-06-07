@@ -133,7 +133,7 @@ export const subStatus = {
 			[
 				cancelBtn
 			],
-			[
+			/* [
 				cancelBtn,
 				{
 					_id: randomUUUID(),
@@ -142,7 +142,8 @@ export const subStatus = {
 					title: 'See Doctor',
 					flag:2
 				}
-			],
+			], */
+			backArr,
 			backArr,
 			backArr,
 		],

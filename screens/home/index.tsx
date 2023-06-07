@@ -149,18 +149,22 @@ const Home = ({navigation}) => {
 		}
 	},[calendarData])
 	
-	return (<GridView
-		{...{
-			profileInfo: payload,
-			onClickFun,
-			isSpinner,
-			onCalendarEvent,
-			currentDate:mon.current,
-			calendarData:omit(appointments,'currentTimestamp','updatedAt')/* :{...currentData,current:`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`} */, 
-			subName:'name',
-			numColumns:categoryId==="Doctor"?2:3
-		}}
-	/>)
+	return (<>
+	
+		<GridView
+			{...{
+				profileInfo: payload,
+				onClickFun,
+				isSpinner,
+				onCalendarEvent,
+				currentDate:mon.current,
+				calendarData:omit(appointments,'currentTimestamp','updatedAt')/* :{...currentData,current:`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`} */, 
+				subName:'name',
+				numColumns:categoryId==="Doctor"?2:3
+			}}
+		/>
+	</>
+	)
 };
 
 export default Home;

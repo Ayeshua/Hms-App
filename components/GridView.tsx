@@ -1,10 +1,13 @@
 import React, { memo, useRef } from 'react';
 import { FlatList, View, Dimensions, ViewToken } from 'react-native';
+import { A } from '@expo/html-elements';
+
 import { screenStyles } from '../styles';
 import Card from './card';
 import GridItem from './GridItem';
 import { Text } from 'react-native-paper';
 import CalendarView from './calendar-view';
+import { colors } from '../theme/colors';
 const { width } = Dimensions.get('screen');
 
 const GridView = ({
@@ -19,6 +22,7 @@ const GridView = ({
 	horizontal,
 	host,
 	header,
+	link,
 	calendarData,
 	onViewableItemsChanged,
 	topItem,
@@ -42,6 +46,7 @@ const GridView = ({
 	horizontal?: boolean;
 	host?: number;
 	header?:string;
+	link?:string;
 	screenName?:string;
 	calendarData?:any;
 	currentDate?:any;
@@ -81,6 +86,7 @@ const GridView = ({
 			ListHeaderComponent={()=><>
 				{calendarData&&<CalendarView {...{currentDate,calendarData,isSpinner,onCalendarEvent}} />}
 				{topItem&&<Card {...topItem} />}
+				{link&&<A style={{marginVertical:5,marginHorizontal:16,fontSize:18,color: colors.tertiary}} href={link}>See Doctor</A>}
 				{header&&    <Text style={{marginVertical:5,marginHorizontal:16}} variant="titleLarge">{header}</Text>
 }
 			</>

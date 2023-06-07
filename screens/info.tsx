@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NestedObjToInfoString, appendText } from '../utils/renderText';
 import GridView from '../components/GridView';
 import { useDispatch, useSelector } from 'react-redux';
-import * as Linking from 'expo-linking';
 
 import { backArr, inputBasePayload, profileInfo, subStatus } from '../constants';
 import { reorder } from '../utils/reorder';
@@ -35,7 +34,7 @@ const Info = ({ route: { params, name }, navigation }) => {
 	const currentInfo  = useSelector(({ entity }) => entity.currentInfo[screenName],customDateEqual);
 	console.log('currentInfo ',currentInfo);
 	const {openShareInput}=useInputSheet()
-
+	const [link, setLink] = useState()
 	const dispatch=useDispatch()
 	const currentData=useMemo(()=>{
 	    return screenName==="Profile"&&!userId?user:currentInfo
@@ -163,12 +162,12 @@ const Info = ({ route: { params, name }, navigation }) => {
 						keyboardType1:'number',
 						onListClick
 					})
-				}else if(flag===2){
+				}/* else if(flag===2){
 					const {link}=currentData
 					console.log('link ',link);
 					
 					Linking.openURL('https://expo.dev');
-				}
+				} */
 			}
 		}
 	};
@@ -258,7 +257,7 @@ const Info = ({ route: { params, name }, navigation }) => {
 					infoData = {
 						...infoData,
 						moreInfo:!id?null:NestedObjToInfoString({
-							id:`~${id}~\n`,
+							id:`~${id}~ \n`,
 							details,
 							ref: screenName==='Appointment'?null:`{{${prescriptionId||appointmentId}:${screenName==='Payment'?details:'Appointment'}}}\n`,
 							link,
@@ -340,6 +339,10 @@ const Info = ({ route: { params, name }, navigation }) => {
 					}
 				}
 			}
+			if(catId==='Patient'&&currentData.status===2){
+				const {link}=currentData
+				setLink(link.includes('http')?link:`https://${link}`)
+			}
 			dispatch(setCurrentInfo({[screenName]:{
 				...currentData,
 				...data,
@@ -368,6 +371,7 @@ const Info = ({ route: { params, name }, navigation }) => {
 				profileInfo: items?.payload||[],
 				onClickFun,
 				isSpinner,
+				link,
 				header: screenName !== 'Profile'||categoryId==='Registrar'?null:'Records',
 				itemBtns: screenName !== 'Profile',
 				topItem:items?.infoData, 
