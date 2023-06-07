@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import { ImageBackground, StyleSheet, View } from 'react-native';
 import { Title } from 'react-native-paper';
 
@@ -14,8 +14,7 @@ const ScreenTitleWrapper = ({
 	title?: string;
 	subTitle?: string;
 	children?: ReactNode;
-}) => {
-	return (
+}) => (
 		<LayoutWrapper>
 			<View
 				style={{
@@ -49,7 +48,6 @@ const ScreenTitleWrapper = ({
 			</View>
 		</LayoutWrapper>
 	);
-};
 export default memo(ScreenTitleWrapper);
 const styles = StyleSheet.create({
 	container: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
 	KeyboardAvoidingView,
@@ -23,9 +23,8 @@ import { useFocusEffect } from '@react-navigation/native';
 export const Login = ({ navigation }: any) => {
 	const [showPassword, setShowPassword] = useState(true);
 	const [isLoadingIn, setLoading] = useState(false);
-	const {
-		user: { email },
-	} = useSelector((state: RootState) => state.login);
+	const email = useSelector((state: RootState) => state.login.user.email);
+
 	const { _login } = useAuth();
 
 	
@@ -163,8 +162,8 @@ export const Login = ({ navigation }: any) => {
 										mode='contained'
 										onPress={handleSubmit((data) => {
 											setLoading(true);
-											_login(data).then(()=>{
-												setLoading(false)
+											_login(data).then((bool)=>{
+												if(!bool)setLoading(bool)
 											});
 										})}
 										loading={isLoadingIn}

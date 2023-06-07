@@ -1,31 +1,55 @@
-import { memo, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { memo, useRef, useState } from 'react';
+import { View } from 'react-native';
 
-import ActionSheet from 'react-native-actions-sheet';
-import { Text, TextInput, Title } from 'react-native-paper';
-import { useDispatch } from 'react-redux';
-import { screenStyles } from '../../styles';
-import { colors } from '../../theme/colors';
-//import { setSelSch } from '../../data/redux/slices/menu';
+import ActionSheet, { SheetManager } from 'react-native-actions-sheet';
+import { Button } from 'react-native-paper';
 import { reorder } from '../../utils/reorder';
 import GridView from '../GridView';
 
 const FlatListSheet = ({
 	sheetId,
-	payload: { onListClick, profileInfo, snapPoints, title },
+	payload: { 
+		 profileInfo, 
+		txt, 
+		snapPoints,
+		 btnLabel,
+		host,
+		isLoading,
+		isSpinner,
+		loadMore,
+		onViewableItemsChanged,
+		numColumns
+	},
 }) => {
 	console.log('profileInfo ', profileInfo);
 	const [selected, setselected] = useState<string[]>([]);
-	const dispatch = useDispatch();
+	
+	const selRef = useRef([]);
 	const onClickFun = ({ index }: { index: number; num?: number }) => {
 		const item = profileInfo[index];
-		const { email } = item;
-		if (selected.includes(email)) {
-			const idx = selected.findIndex((val) => val === email);
-			setselected(reorder(selected, idx, null, 1, true));
-		} else {
-			setselected([...selected, email]);
-			//dispatch(setSelSch(item));
+		if(host){
+
+			const { status, userId } = item;
+			if (selected.includes(userId)) {
+				const idx = selected.findIndex((val) => val === userId);
+				setselected(reorder(selected, idx, null, 1, true));
+				selRef.current = reorder(selRef.current, idx, null, 1, true);
+			} else {
+				//dispatch(setSelSch(item));
+				if (btnLabel) {
+					setselected([...selected, userId]);
+					selRef.current = [...selRef.current, { status, userId }];
+				} else {
+					SheetManager.hide(sheetId)
+				}
+			}
+		}else{
+			SheetManager.hide(sheetId,{
+				payload:{
+					item, 
+					txt
+				}
+			})
 		}
 	};
 
@@ -41,30 +65,45 @@ const FlatListSheet = ({
 				width: 100,
 			}}
 			gestureEnabled
+			//ref={actionSheetRef}
 		>
-			<Title
-				style={{
-					paddingLeft: 16,
-				}}
-			>
-				{title}
-			</Title>
 			<GridView
 				{...{
 					profileInfo,
 					onClickFun,
 					selected,
-					host: 1,
+					host,
+					isLoading,
+					isSpinner,
+					loadMore,
+					onViewableItemsChanged,
+					numColumns,
+					screenName:'Doctors'
 				}}
 			/>
-			<TouchableOpacity style={{height:50,width:'100%'}} onPress={()=>{onListClick(null, null, -1)}} >
-
-			<Text
-
-				style={{ ...screenStyles.input,color:colors.silver,paddingVertical:5,paddingHorizontal:16 }}
-				
-			>add comment...</Text>
-			</TouchableOpacity>
+			{btnLabel && (
+				<View
+					style={{
+						display: 'flex',
+						backgroundColor: '#fff',
+						padding: 10,
+					}}
+				>
+					<Button
+						mode='contained'
+						onPress={() => SheetManager.hide(sheetId,{
+							payload:{
+								refs:selRef.current, 
+								txt
+							}
+						})}
+						disabled={numColumns&&!host?false:selected.length === 0}
+						textColor='#fff'
+					>
+						{btnLabel}
+					</Button>
+				</View>
+			)}
 		</ActionSheet>
 	);
 };

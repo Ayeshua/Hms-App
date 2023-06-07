@@ -1,13 +1,10 @@
 import functions from '@react-native-firebase/functions';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
 import { splitStr } from '../../utils/splitStr';
-import { setSharedEmail } from '../../data/redux/slices/menu';
-import { useDispatch } from 'react-redux';
 import { DLINK_URL } from '../../constants';
 import { isArray } from 'lodash';
 
-export const useFunc = () => {
-	const dispatch = useDispatch();
+export const cloudFunc = () => {
 	const callFunc = async (data, name) => {
 		const response = await functions().httpsCallable(name)(data);
 		return response.data;
@@ -18,9 +15,9 @@ export const useFunc = () => {
 			// domainUriPrefix is created in your Firebase console
 			domainUriPrefix: DLINK_URL,
 			android: {
-				packageName: 'com.hmsapp',
+				packageName: 'org.umoapp',
 				//androidMinPackageVersionCode: '3',
-				minimumVersion: '1',
+				minimumVersion: '3',
 			},
 			social: {
 				title: subject,
@@ -34,7 +31,7 @@ export const useFunc = () => {
 		} else {
 			dLink = await dynamicLinks().buildShortLink(options, 'SHORT');
 		}
-		console.log('dLink ', dLink);
+		console.log('createDlink ', dLink);
 		return dLink;
 	};
 	const shareDLink = async (
@@ -42,31 +39,28 @@ export const useFunc = () => {
 		link,
 		body,
 		subject,
-		path,
 		payload,
 		socialImageLink,
+		func
 	) => {
-		dispatch(setSharedEmail(emails));
-
 		const dLink = link
-			? await createDlink(link, payload.url, subject, path)
+			? await createDlink(link, payload.url, subject, body)
 			: null;
-		console.log('dLink ', dLink);
+		console.log('shareDLink ', dLink);
 		const { message } = await callFunc(
 			{
 				emails: isArray(emails)
 					? emails
 					: emails.includes(',')
-					? splitStr(emails)
+					? splitStr(emails,',')
 					: [emails.trim()],
 				payload,
-				path,
 				body,
 				dLink,
 				subject,
 				socialImageLink,
 			},
-			'addShare',
+			func,
 		);
 		return message;
 	};

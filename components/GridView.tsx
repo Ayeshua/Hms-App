@@ -23,7 +23,8 @@ const GridView = ({
 	onViewableItemsChanged,
 	topItem,
 	screenName,
-	onCalendarEvent
+	onCalendarEvent,
+	currentDate
 }: {
 	profileInfo: any[];
 	onClickFun: (res: { index: number; num: number }) => void;
@@ -43,6 +44,7 @@ const GridView = ({
 	header?:string;
 	screenName?:string;
 	calendarData?:any;
+	currentDate?:any;
 	topItem?: { info: string; url: string; whiteBg?: boolean; } 
 }) => {
 	const handleItemsPartiallyVisible = (info: {
@@ -77,7 +79,7 @@ const GridView = ({
 			extraData={{ profileInfo }}
 			style={{backgroundColor:'#fff'}}
 			ListHeaderComponent={()=><>
-				{calendarData&&<CalendarView {...{calendarData,isSpinner,onCalendarEvent}} />}
+				{calendarData&&<CalendarView {...{currentDate,calendarData,isSpinner,onCalendarEvent}} />}
 				{topItem&&<Card {...topItem} />}
 				{header&&    <Text style={{marginVertical:5,marginHorizontal:16}} variant="titleLarge">{header}</Text>
 }

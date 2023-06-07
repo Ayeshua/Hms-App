@@ -3,8 +3,7 @@ import { Avatar } from 'react-native-paper';
 import React, { memo } from 'react';
 import { colors } from '../theme/colors';
 
-const AvatarIcon = ({ name = 'account-box-outline' }: { name?: string }) => {
-	return (
+const AvatarIcon = ({ name = 'account-box-outline' }: { name?: string }) => (
 		<View>
 			<Avatar.Icon
 				size={80}
@@ -18,5 +17,4 @@ const AvatarIcon = ({ name = 'account-box-outline' }: { name?: string }) => {
 			/>
 		</View>
 	);
-};
 export default memo(AvatarIcon);

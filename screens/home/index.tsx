@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GridView from '../../components/GridView';
 import { calendarStatus, homeInfo } from '../../constants';
-import { useDispatch, useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { reorder } from '../../utils/reorder';
 import { lastDayOfMonth,subMonths,addDays,isToday,isFuture } from 'date-fns';
 import useFBDocs from '../../hooks/use-store/useFBDocs';
@@ -10,10 +10,24 @@ import { isEmpty,omit } from "lodash";
 import { DateTimeFormat } from '../../utils/date-formatter';
 import { colors } from '../../theme/colors';
 import { ToastAndroid } from 'react-native';
+import { customDateEqual } from '../../utils/custom-compare';
 const Home = ({navigation}) => {
-	const { categoryId,userId } = useSelector(({ login:{user} }) => user);
-	const {calendarData={},appointments={}} = useSelector(({ entity }) => entity);
+	const { categoryId,userId } = useSelector(({ 
+		login:{
+		user:{ 
+		categoryId,
+		userId 
+	}
+	} 
+	}) => {
+		return { categoryId,userId }
+	},shallowEqual);
+	const {arr:calendarData=[]} = useSelector(({ entity }) => entity.calendarData,customDateEqual);
+	const appointments = useSelector(({ entity }) => entity.appointments,customDateEqual);	
 	const [isSpinner, setSpinner] = useState<boolean>(true);
+	const mon=useRef(DateTimeFormat(new Date(),'yyyy-MM-dd'))
+	console.log('appointments ',appointments);
+	
 	const [searchAppointments, setSearchAppointments] = useState<any>();
 	const dispatch=useDispatch()
 	const payload = useMemo(() => {
@@ -55,7 +69,7 @@ const Home = ({navigation}) => {
 	};
 	const startSearch = useCallback((timestamp: number|Date) => {
 		console.log('startSearch useCallback ', timestamp);
-		setSpinner(true)
+		mon.current=DateTimeFormat(timestamp,'yyyy-MM-dd')
 		const timestamp1=subMonths(timestamp,1)
 		setSearchAppointments({
 			timestamp1:lastDayOfMonth(timestamp1),
@@ -65,16 +79,21 @@ const Home = ({navigation}) => {
 			secValue:categoryId!=='Registrar'?null:{key:[1,2,3,4],operation:'in', value:`status`}
 
 		});
+		setSpinner(true)
 	}, [categoryId,userId]);
 	
 	useEffect(() => {
 		startSearch(new Date())
 	}, [startSearch])
-	const resCallback=useCallback((appointments)=>{
-		setSearchAppointments(null)
-		console.log('appointments ',appointments.length);
+	const resCallback=useCallback((arr)=>{
+		if(!isEmpty(arr)){
 
-		dispatch(setCalendarData(appointments))
+			setSearchAppointments(null)
+			dispatch(setCalendarData({arr,updatedAt:new Date().getMilliseconds()}))
+		}else{
+			setSpinner(false)
+
+		}
 	},[])
 	useFBDocs(searchAppointments,resCallback)
 	useEffect(()=>{
@@ -96,7 +115,7 @@ const Home = ({navigation}) => {
 				if(!currentTimestamp&&index===len-1){
 					currentTimestamp=val
 				}
-				console.log('formatStr ',formatStr,' val ',val);
+				console.log('formatStr ',formatStr,' val ',val,' status ',status,' marked ',marked);
 				const dot=calendarStatus[status]
 				if(marked.has(formatStr)){
 					const obj=marked.get(formatStr)
@@ -114,22 +133,32 @@ const Home = ({navigation}) => {
 			
 			
 			setSpinner(false)
-			console.log('formatStr currentTimestamp ',currentTimestamp);
+			const markedDates=Object.fromEntries(marked)
+			console.log('formatStr currentTimestamp ',currentTimestamp,' markedDates ',markedDates);
 
-			dispatch(setAppointments({markedDates:Object.fromEntries(marked),currentTimestamp}))
-			dispatch(setListItems(Object.fromEntries(markedItems)))
+			dispatch(setAppointments({
+				markedDates,
+				currentTimestamp,
+				updatedAt:new Date().getMilliseconds() 
+			}))
+			dispatch(setListItems({
+				data:Object.fromEntries(markedItems),
+				updatedAt:new Date().getMilliseconds() 
+			}))
 		
 		}
 	},[calendarData])
+	
 	return (<GridView
 		{...{
 			profileInfo: payload,
 			onClickFun,
 			isSpinner,
 			onCalendarEvent,
-			calendarData:omit(appointments,'currentTimestamp')/* :{...currentData,current:`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`} */, 
+			currentDate:mon.current,
+			calendarData:omit(appointments,'currentTimestamp','updatedAt')/* :{...currentData,current:`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`} */, 
 			subName:'name',
-			numColumns:3
+			numColumns:categoryId==="Doctor"?2:3
 		}}
 	/>)
 };

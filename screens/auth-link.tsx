@@ -11,10 +11,8 @@ import { useAuth } from '../hooks/auth/useAuth';
 import { RootState } from '../data/redux/store';
 
 export const AuthLink = ({navigation}) => {
-	const {
-		user: { email },
-		signupMsg,
-	} = useSelector((state: RootState) => state.login);
+	const email = useSelector((state: RootState) => state.login.user.email);
+	const signupMsg = useSelector((state: RootState) => state.login.signupMsg);
 	const [isResettingPassword, setResetting] = useState<boolean>(false);
 
 	const { _sendEmailVerification,_logOut } = useAuth();

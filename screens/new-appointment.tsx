@@ -3,7 +3,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { RootState } from '../data/redux/store';
 import { useStore } from '../hooks/use-store';
 import AvatarIcon from '../components/avatar-icon';
 import ErrorBox from '../components/errorBox';
@@ -11,14 +10,14 @@ import { screenStyles } from '../styles';
 import randomUUUID from '../utils/UUUID';
 import ConfirmationModal from '../components/dialog/confirmation';
 import { omit } from "lodash";
+import { customDateEqual } from '../utils/custom-compare';
 
 const payInfo={amount:100,currency:'ZMW'}
 
 export const NewAppointment = ({ navigation}) => {
 	
-  const {
-		user,
-	} = useSelector((state: RootState) => state.login);
+	const user  = useSelector(({ login }) => login.user,customDateEqual);
+
 	const [isSaving, setSaving] = useState<boolean>(false);
 	const appointmentRef=useRef<any>()
 	const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);

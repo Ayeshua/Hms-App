@@ -5,8 +5,7 @@ import { Login } from '../screens/login';
 import { SignUp } from '../screens/signup';
 
 const Stack = createNativeStackNavigator();
-export const AuthStack = () => {
-	return (
+export const AuthStack = () => (
 		<Stack.Navigator
 			screenOptions={{
 				headerShown: false,
@@ -26,4 +25,4 @@ export const AuthStack = () => {
 			/>
 		</Stack.Navigator>
 	);
-};
+

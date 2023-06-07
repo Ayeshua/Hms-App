@@ -1,0 +1,1 @@
+export const customDateEqual = (oldRecord:any, newRecord:any) => oldRecord?.updatedAt === newRecord?.updatedAt

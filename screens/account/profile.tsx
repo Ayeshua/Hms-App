@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View, ScrollView } from 'react-native';
 import { TextInput } from 'react-native-paper';
@@ -8,15 +8,22 @@ import ErrorBox from '../../components/errorBox';
 import { SEX } from '../../constants';
 import { useMe } from '../../hooks/useMe';
 import { screenStyles } from '../../styles';
-import { RootState } from '../../data/redux/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { useStore } from '../../hooks/use-store';
 import { omit, pick } from 'lodash';
 import { setUser } from '../../data/redux/slices/login';
 import useNavOptions from '../../hooks/useNavOptions';
 import { colors } from '../../theme/colors';
-import { useFunc } from '../../hooks/functions/useFunc';
+import { cloudFunc } from '../../hooks/functions/useFunc';
+import { customDateEqual } from '../../utils/custom-compare';
 
+const icons = [
+	{
+		name: 'checkbox-outline',
+		color: colors.primary,
+		size: 23,
+	},
+];
 const userFields=[
 	'name',
 	'email',
@@ -33,11 +40,11 @@ const Profile = ({ navigation }) => {
 	const [modalMsg, setmodalMsg] = useState<any>();
 	const dispatch = useDispatch();
 
-	const { user } = useSelector((state: RootState) => state.login);
+	const user  = useSelector(({ login }) => login.user,customDateEqual);
 	const { _updateUser } = useMe();
-	const { callFunc } = useFunc();
+	const { callFunc } = cloudFunc();
 
-	const { addModData } = useStore();
+	const { addModData, queryCollections } = useStore();
 
 	const menuOpt = (msg: any) => {
 		setmodalMsg(msg);
@@ -51,7 +58,7 @@ const Profile = ({ navigation }) => {
 		idNumber ='',
 		categoryId ='',
 		speciality='',
-		userId,
+		id,
 		status,
 		age=0,
 		phone='',
@@ -77,40 +84,54 @@ const Profile = ({ navigation }) => {
 	const saveUser = useCallback(async (payload: any) => {
 		const date = new Date();
 		console.log('payload ', payload);
-		const statusVal = Math.max(2,status);
-		if (status === 1) {
+		const {idNumber}=payload
+		const res= await queryCollections(idNumber,id)
+		console.log('idNumber res ',res);
+		
+		if(res>0){
+			menuOpt({
+				title: 'Nrc In Use',
+				message: 'The Id you have provide is already in user by another user. Contact admin to resolve',
+				onConfirmText: 'Okay',
+			});
+		}else{
 
-			await callFunc(
-				{ email, payload:{status:statusVal} },
-				'addCustom',
-			);
-		}
-		await addModData(
-			{
-				...payload,
-				status: statusVal,
-				timestamp: date,
-			},
-			userId,
-			categoryId,
-			categoryId==='Patient'?userFields:categoryId==='Doctor'?[
+			const statusVal = Math.max(2,status);
+			if (status === 1) {
+	
+				await callFunc(
+					{ email, payload:{status:statusVal} },
+					'addCustom',
+				);
+			}
+	
+			await addModData(
+				{
+					...payload,
+					status: statusVal,
+					timestamp: date,
+				},
+				id,
+				categoryId,
+				categoryId==='Patient'?userFields:categoryId==='Doctor'?[
+				...userFields,
+				'phone',	
+				'speciality'
+		  ]:[
 			...userFields,
 			'phone',	
-			'speciality'
-	  ]:[
-		...userFields,
-		'phone',	
-  ]
-		);
-		dispatch(setUser({ ...payload, status: statusVal }));
-
-		setShowConfirmationModal(false);
-		if(statusVal===2){
-			console.log('nav boarding');
-			
-			navigation.navigate('Boarding')
+	  ]
+			);
+			dispatch(setUser({ ...payload, status: statusVal }));
+	
+			setShowConfirmationModal(false);
+			if(statusVal===2){
+				console.log('nav boarding');
+				
+				navigation.navigate('Boarding')
+			}
 		}
-	}, []);
+	}, [queryCollections, addModData]);
 	const iconPress = useCallback(() => {
 		handleSubmit(async (data) => {
 			// TODO*: add dispatcher for user data
@@ -133,16 +154,7 @@ const Profile = ({ navigation }) => {
 		
 		})();
 	}, [_updateUser]);
-	const icons = useMemo(() => {
-		const arr = [
-			{
-				name: 'checkbox-outline',
-				color: colors.primary,
-				size: 23,
-			},
-		];
-		return arr;
-	}, []);
+	
 	useNavOptions(
 		navigation,
 		 30,
@@ -251,7 +263,7 @@ const Profile = ({ navigation }) => {
 							render={({ field: { onChange: handleChange, value } }) => (
 								<TextInput
 									mode='outlined'
-									label={'ID Number'}
+									label={'ID (NRC/Passport)'}
 									placeholder='Change ID Number'
 									value={value}
 									onChangeText={handleChange}

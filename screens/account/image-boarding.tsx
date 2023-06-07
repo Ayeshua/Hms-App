@@ -17,19 +17,20 @@ import uploadFile from '../../hooks/storage/useUploadFile';
 import { colors } from '../../theme/colors';
 import { useStore } from '../../hooks/use-store';
 import { setUser } from '../../data/redux/slices/login';
-import { useFunc } from '../../hooks/functions/useFunc';
+import { cloudFunc } from '../../hooks/functions/useFunc';
 import { useMe } from '../../hooks/useMe';
 import Badge from '../../components/badge';
+import { customDateEqual } from '../../utils/custom-compare';
 
 const ImageBoarding = ({ navigation, route: { params } }) => {
 	const { start,imgUrl } = params || {};
 	const pos = useRef(0);
-	const { user } = useSelector(({ login }) => login);
+	const user  = useSelector(({ login }) => login.user,customDateEqual);
 	const [files, setFiles] = useState({});
 	const [value, setValue] = useState(0);
 	const dispatch = useDispatch();
 	const { addModData } = useStore();
-	const { callFunc } = useFunc();
+	const { callFunc } = cloudFunc();
 	const { _updatePhotoUrl } = useMe();
 	
 	const urls = useMemo(() => profileImages.map(({ value }) => value), []);

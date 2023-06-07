@@ -24,8 +24,7 @@ const ConfirmationModal = ({
 	hasCancel?: boolean;
 	onDismiss: () => void;
 	onConfirm: () => void;
-}) => {
-	return (
+}) => (
 		<Portal>
 			<Dialog visible={visible} dismissable={dismissable} onDismiss={onDismiss}>
 				<Dialog.Title>{title}</Dialog.Title>
@@ -44,7 +43,6 @@ const ConfirmationModal = ({
 			</Dialog>
 		</Portal>
 	);
-};
 export default memo(ConfirmationModal);
 const styles = StyleSheet.create({
 	warnMassage: {

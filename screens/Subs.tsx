@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import GridView from '../components/GridView';
 import useNavOptions from '../hooks/useNavOptions';
 import useFBDocs from '../hooks/use-store/useFBDocs';
 import { fbQueries } from '../constants';
 import { unionBy } from "lodash";
+import { customDateEqual } from '../utils/custom-compare';
+import { setCurrentInfo } from '../data/redux/slices/entities';
 
 const Subs = ({ navigation,route:{name,params} }) => {
 	const {
@@ -12,7 +14,7 @@ const Subs = ({ navigation,route:{name,params} }) => {
 		userId,
 		categoryId
 	} = params || {};
-	const { user } = useSelector(({ login }) => login);
+	const user  = useSelector(({ login }) => login.user,customDateEqual);
 	const {categoryId:catId,userId:currentId}=user
 	const [isLoading, setLoading] = useState<boolean>(false);
 	const [isSpinner, setSpinner] = useState<boolean>(true);
@@ -20,12 +22,15 @@ const Subs = ({ navigation,route:{name,params} }) => {
 	const [entities, setEntities] = useState<any[]>([]);
 	const [searchEntities, setSearchEntities] = useState<{}|null>();
 	const lastDocRef = useRef();
-
+	const dispatch=useDispatch()
 	const onClickFun = ({ index }:{index:number}) => {
 		const entity=entities[index]
 		const {pathName,cat}=fbQueries[screenName]
+		dispatch(setCurrentInfo({[pathName]:{
+			...entity,
+			updatedAt:new Date().getTime() 
+		}}))
 		navigation.navigate('Info',{
-			info:entity,
 			userId:entity[`${cat.toLowerCase()}Id`],
 			categoryId:cat,
 			screenName:pathName
@@ -36,7 +41,7 @@ const Subs = ({ navigation,route:{name,params} }) => {
 			setLoading(true);
 			setSearchEntities({
 				...fbQueries[screenName].fb,
-			    boolValue:!categoryId||catId==='Registrar'?null:{key:userId||currentId, value:`${(categoryId||catId).toLowerCase()}Id`},
+			    boolValue:!categoryId&&catId==='Registrar'?null:{key:userId||currentId, value:`${(categoryId||catId).toLowerCase()}Id`},
 				lastDoc,
 			});
 		},

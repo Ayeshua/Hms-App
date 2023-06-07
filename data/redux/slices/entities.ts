@@ -5,12 +5,24 @@ const initialState: {
 	selected: any;
 	calendarData:any
 	appointments:any,
-	listItems:any
+	currentInfo:any,
+	listItems:any,
+	Registrars:any,
+	Doctors:any
 } = {
 	selected: {},
 	calendarData:{},
 	appointments:{},
-	listItems:{}
+	currentInfo:{},
+	listItems:{},
+	Registrars: {
+		updatedAt: new Date().getMilliseconds(),
+		arr:[]
+	},
+	Doctors: {
+		updatedAt: new Date().getMilliseconds(),
+		arr:[]
+	},
 };
 
 export const entitySlice = createSlice({
@@ -18,6 +30,20 @@ export const entitySlice = createSlice({
 	initialState,
 	reducers: {
 		
+		setRegistrars: (state, { payload }) => {
+			return { ...state, Registrars: payload };
+		},
+		setCurrentInfo: (state, { payload }) => {
+			return { 
+				...state, 
+				currentInfo: {
+					...state.currentInfo,
+					...payload}  
+				};
+		},
+		setDoctors: (state, { payload }) => {
+			return { ...state, Doctors: payload };
+		},
 		setSelected: (state, { payload }) => {
 			return { ...state, selected: payload };
 		},
@@ -36,8 +62,11 @@ export const entitySlice = createSlice({
 
 export const {
 	setSelected,
+	setRegistrars,
+	setDoctors,
 	setCalendarData,
 	setAppointments,
-	setListItems
+	setListItems,
+	setCurrentInfo
 } = entitySlice.actions;
 export default entitySlice.reducer;

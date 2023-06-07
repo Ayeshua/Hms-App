@@ -1,5 +1,5 @@
 /* eslint-disable no-empty */
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { View, StyleSheet, Dimensions, FlatList, Animated } from 'react-native';
 
 const { width } = Dimensions.get('window');

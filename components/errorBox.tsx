@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { FieldError } from 'react-hook-form';
 import { HelperText } from 'react-native-paper';
 
@@ -9,8 +9,7 @@ type ErrorBoxType = {
 	errors?: FieldError | undefined;
 	type?: 'normal' | 'required ' | 'length' | 'pattern';
 };
-const ErrorBox = ({ errors, length, isVisible, field, type }: ErrorBoxType) => {
-	return (
+const ErrorBox = ({ errors, length, isVisible, field, type }: ErrorBoxType) => (
 		<>
 			{errors?.type == 'required' && (
 				<HelperText type='error' visible={errors?.type == 'required'}>
@@ -29,5 +28,5 @@ const ErrorBox = ({ errors, length, isVisible, field, type }: ErrorBoxType) => {
 			)}
 		</>
 	);
-};
+
 export default memo(ErrorBox);

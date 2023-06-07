@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import firestore from '@react-native-firebase/firestore';
 import { reorder } from '../../utils/reorder';
+import { getSubTitle } from '../../utils/new-temp';
 
 const useFBDocs = (form, callback) => {
 	
@@ -18,9 +19,14 @@ const useFBDocs = (form, callback) => {
 					group,
 					timestamp1,
 					timestamp2,
+					origin,
+					subPath
 				} = form;
 				console.log('startSearch path ', _path);
-
+				if(timestamp1){
+					console.log('timestamp ',DateTimeFormat(timestamp1,'yyyy-MM-dd'));
+					console.log('timestamp1 ',DateTimeFormat(timestamp2,'yyyy-MM-dd'));
+				}
 				let q;
 				if (group) {
 					q = firestore().collectionGroup(_path);
@@ -68,13 +74,13 @@ const useFBDocs = (form, callback) => {
 								if (type === 'added' || type === 'modified') {
 
 									payload = doc.data();
-									const {timestamp,scheduleDate}=payload
+									const {timestamp,scheduleDate,updatedAt}=payload
 									payload = {
 										...payload,
 										id,
 										ref: path,
 										timestamp:
-											payload.timestamp &&
+											timestamp &&
 											typeof timestamp.toDate === 'function'
 												? timestamp.toMillis()
 												: null,
@@ -83,10 +89,34 @@ const useFBDocs = (form, callback) => {
 											typeof scheduleDate.toDate === 'function'
 												? scheduleDate.toMillis()
 												: null,
-										order: new Date(scheduleDate?.toDate()||timestamp?.toDate()).getTime(),
+										updatedAt:
+											updatedAt &&
+											typeof updatedAt.toDate === 'function'
+												? updatedAt.toMillis()
+												: timestamp &&
+												typeof timestamp.toDate === 'function'
+													? timestamp.toMillis()
+													: null,
 									};
 								}
-
+								if(origin===1){
+									const obj=payload[`${boolValue.value.replace('Val','')}`]
+									const res=Object.entries(obj).map((entry)=>{
+										const [key,value]=entry
+										if(value){
+											return key
+										}
+									})
+									payload={
+										...payload,
+										subTitle: getSubTitle(
+											res.join('|'),
+											'pencil',
+											'black',
+											
+										),
+									}
+								}
 								if (type === 'added') {
 									console.log(
 										'get loans inner ' + path,
@@ -95,7 +125,7 @@ const useFBDocs = (form, callback) => {
 									);
 									if (
 										allDocs.length === 0 ||
-										allDocs[allDocs.length - 1].order > payload.order
+										allDocs[allDocs.length - 1].timestamp > payload.timestamp
 									) {
 										console.log('get loans allDocs ');
 										allDocs = [...allDocs, payload];
@@ -108,7 +138,7 @@ const useFBDocs = (form, callback) => {
 									const position = allDocs.findIndex(
 										({ _id, userId }) => _id === id || userId === id,
 									);
-									const del = type === 'removed';
+									const del =origin===1?!!allDocs[position][boolValue.value]: subPath || type === 'removed';
 									allDocs = reorder(
 										allDocs,
 										position,
@@ -116,6 +146,9 @@ const useFBDocs = (form, callback) => {
 										1,
 										del,
 									);
+									if (subPath) {
+										allDocs = [payload, ...allDocs];
+									}
 								}
 							});
 						callback(allDocs);

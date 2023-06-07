@@ -15,8 +15,7 @@ const ToolsPanel = ({
 	toolPress,
 	selTool,
 	isCloning,
-}) => {
-	return (
+}) => (
 		<View
 			style={{
 				flex: 1,
@@ -199,6 +198,5 @@ const ToolsPanel = ({
 			)}
 		</View>
 	);
-};
 
 export default memo(ToolsPanel);

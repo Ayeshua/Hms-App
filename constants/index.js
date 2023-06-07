@@ -4,13 +4,33 @@ import randomUUUID from '../utils/UUUID';
 export const LINK_URL = 'https://hospital-management-syst-996a1.web.app';
 export const DLINK_URL = 'https://hmsappzambia.page.link';
 export const LOGO_URL = 'https://firebasestorage.googleapis.com/v0/b/hospital-management-syst-996a1.appspot.com/o/hms.png?alt=media&token=21deff3e-9238-4fe1-8d23-beb84da1d143';
+export const PROFILE_URL = 'https://firebasestorage.googleapis.com/v0/b/umotto.appspot.com/o/istockphoto-1337144146-612x612.jpg?alt=media&token=9d25d951-4db4-4ab4-944d-8c9b13bf33d9';
 
 export const SEX = [
 	{ name: 'Female', label: 'Female' },
 	{ name: 'Male', label: 'Male' },
 	{ name: 'Other', label: 'Other' },
 ];
-
+export const inputBasePayload= {
+	value: '',
+	required: true,
+	visible: true,
+	label: 'janedoe@example.com, johndoe@example',
+	message: 'Enter email(s); seperated by comas',
+	leftBtnLabel: 'Close',
+}
+export const tokenObj = {
+	Registrar: [
+		'Registrar',
+	],
+	Doctor: [
+		'Doctor',
+	],
+	def: [
+		'Doctor',
+		'Registrar',
+	],
+};
 export const profileImages = [
 	{ value: 'profileUrl', title: 'Profile Pic' },
 ];
@@ -239,6 +259,102 @@ export const adminInfo = [
 	}
 
 ];
+/* bind:{
+	name:'amount',
+	subname:'currency',
+	body:'details',
+	id:'precriptionId',
+	agender:'timestamp'
+},
+cat:'Patient', */
+export const notes = [
+	{
+		id: '0hafsoiisjfpoofksdpofkosdp',
+		precriptionId: '0hafsoiisjfpoofksdpofkosdp',
+		patientId: 'emfe45h1lWX4iHF8nobJHEipiTU2',
+		ref: 0,
+		amount: 20,
+		details: 'ARVs, five tabs',
+		timestamp: new Date().getMilliseconds(),
+		status: 0,
+		currency: 'ZMW',
+		backgroundColor: colors.lightPurple,
+		/* subTitle:{
+
+		} */
+	},
+	{
+		id: 'bksjhsfahofjsdlfsdlvfsjdfls',
+		precriptionId: 'bksjhsfahofjsdlfsdlvfsjdfls',
+		patientId: 'emfe45h1lWX4iHF8nobJHEipiTU2',
+		ref: 0,
+		amount: 200,
+		details: 'prednisone 10 mg, five tabs',
+		timestamp: new Date().getMilliseconds(),
+		status: 0,
+		currency: 'ZMW',
+		backgroundColor: colors.lightPurple,
+		/* subTitle:{
+
+		} */
+	},
+	{
+		id: 'kjfjhdkfsdgljdglfdgdfknldf',
+		precriptionId: 'kjfjhdkfsdgljdglfdgdfknldf',
+		patientId: 'emfe45h1lWX4iHF8nobJHEipiTU2',
+		ref: 0,
+		amount: 20,
+		details: 'panado 10 mg, five tabs',
+		timestamp: new Date().getMilliseconds(),
+		status: 0,
+		currency: 'ZMW',
+		backgroundColor: colors.lightPurple,
+		/* subTitle:{
+
+		} */
+	},
+	
+];
+export const d_users = [
+	{
+		"age": 30, 
+		"categoryId": "Patient", 
+		"email": "Mumaba@gmail.com", 
+		"emailVerified": true, 
+		"gender": "Male",
+		 "id": "emfe45h1lWX4iHF8nobJHEipiTU2", 
+		 "idNumber": "455845987", 
+		 "name": "Dr.Mumaba", 
+		 speciality:'Gp',
+		 "patientId": "emfe45h1lWX4iHF8nobJHEipiTU2", 
+		 "profileUrl": "https://picsum.photos/id/10/200",  
+		"userId": "emfe45h1lWX4iHF8nobJHEipiTU2",
+		backgroundColor: colors.lightPurple,
+		/* subTitle:{
+
+		} */
+	},
+	{
+		"age": 20, 
+		"categoryId": "Patient", 
+		"email": "bell@gmail.com", 
+		"emailVerified": true, 
+		"gender": "Female",
+		 "id": "bjjdfbjklgfslgnsljgsnjl", 
+		 "idNumber": "4374309398190", 
+		 "name": "Dr.Bell", 
+		 speciality:'Dentist',
+		 "patientId": "bjjdfbjklgfslgnsljgsnjl", 
+		"userId": "bjjdfbjklgfslgnsljgsnjl",
+		backgroundColor: colors.lightPurple,
+		/* subTitle:{
+
+		} */
+	},
+	
+	
+	
+];
 export const fbQueries={ 
 	Payments:{
 		fb:{path: 'Payment',
@@ -259,6 +375,8 @@ export const fbQueries={
 		fb:{path: 'Prescription',
 		lim: 15},
 		bind:{
+			name:'amount',
+			subname:'currency',
 			body:'details',
 			id:'precriptionId',
 			agender:'timestamp'
@@ -282,8 +400,10 @@ export const fbQueries={
 	Registrars:{
 		fb:{path: 'Registrar',
 		lim: 15},
-		bind:{body:'email',
-		name:'name',},
+		bind:{
+			body:'email',
+			name:'name',
+		},
 		cat:'Registrar',
 		pathName:'Profile',
 		iconName:'account-box-outline' 

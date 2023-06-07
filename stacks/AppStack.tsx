@@ -1,17 +1,18 @@
 
 import { NavigationContainer } from '@react-navigation/native';
 import AuthIsLoaded from '../AuthIsLoaded';
-import { RootState } from '../data/redux/store';
-import { useSelector } from 'react-redux';
+import { shallowEqual, useSelector } from 'react-redux';
 import { AuthStack } from './auth-stack';
 import { ProStack } from './pro-stack';
 import MainStack from './main-stack';
 
 
 const AppContainer = ({ appIsReady, SplashScreen }) => {
-	const {
+	const { emailVerified, status } = useSelector(({login:{
 		user: { emailVerified, status },
-	} = useSelector((state: RootState) => state.login);
+	}}) => {
+		return { emailVerified, status }
+	},shallowEqual);
 	console.log('current status ',status);
 	
 	return (

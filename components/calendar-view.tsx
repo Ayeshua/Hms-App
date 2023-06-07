@@ -4,10 +4,11 @@ import {Calendar} from 'react-native-calendars';
 import { colors } from '../theme/colors';
 
 const {height}=Dimensions.get('screen')
-const CalendarView = ({calendarData,isSpinner,onCalendarEvent}) => {
-    //console.log('current ',current);
-    
-  return (
+const CalendarView = ({calendarData,isSpinner,onCalendarEvent,currentDate}) => {
+  
+  console.log('currentDate ',currentDate);
+  
+  return(
     <Calendar
       // Customize the appearance of the calendar
       style={{
@@ -19,20 +20,21 @@ const CalendarView = ({calendarData,isSpinner,onCalendarEvent}) => {
       markingType={'multi-dot'}
       displayLoadingIndicator={isSpinner}
       {...calendarData}
+      current={currentDate}
       // Callback that gets called when the user selects a day
       onDayPress={({timestamp}) => {
         console.log('selected timestamp', timestamp);
         onCalendarEvent(timestamp,true)
       }}
+      
       disableAllTouchEventsForInactiveDays
       // Mark specific dates as marked
       onMonthChange={({timestamp}) => {
-        console.log('month changed', timestamp);
+        
         onCalendarEvent(timestamp)
 
       }}
     />
-  )
-}
+  )}
 
 export default memo(CalendarView)

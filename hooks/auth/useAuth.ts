@@ -1,7 +1,7 @@
 import auth from '@react-native-firebase/auth';
 
 import { Alert } from 'react-native';
-import { useFunc } from '../functions/useFunc';
+import { cloudFunc } from '../functions/useFunc';
 import { Person } from '../../entities/Person';
 import { LINK_URL, LOGO_URL } from '../../constants';
 import { useDispatch } from 'react-redux';
@@ -10,17 +10,19 @@ import { setSignupMsg, setUser } from '../../data/redux/slices/login';
 type UserLogin = Pick<Person, 'email' | 'password'>;
 
 export const useAuth = () => {
-	const { createDlink,callFunc } = useFunc();
+	const { createDlink,callFunc } = cloudFunc();
 	const dispatch = useDispatch();
 
 	const _login = async ({ email, password }: UserLogin) => {
 		try {
 			await auth().signInWithEmailAndPassword(email, password);
+			return true
 		} catch (error) {
 			Alert.alert('Error', 'Sorry wrong password or email');
 			console.log('====================================');
 			console.log(error);
 			console.log('====================================');
+			return false
 		}
 	};
 	const actionLink = async (

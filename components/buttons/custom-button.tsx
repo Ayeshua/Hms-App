@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button as PaperButton, Props } from 'react-native-paper';
 import { colors } from '../../theme/colors';
@@ -16,25 +16,13 @@ const Button = (
 		style,
 	} = props;
 
-	if (mode == 'outlined') {
-		return (
-			<PaperButton
-				mode={mode}
-				// @ts-ignore
-				style={{ ...style, ...btnStyles.SignUpButton }}
-				{...props}
-			>
-				{children}
-			</PaperButton>
-		);
-	}
 	return (
 		<PaperButton
 			mode={mode}
-			textColor='white'
+			textColor={mode == 'outlined'?colors.primary:'white'}
 			{...props}
 			// @ts-ignore
-			style={{ ...style, ...btnStyles.loginButton }}
+			style={{ ...style, ...btnStyles[mode == 'outlined'?'SignUpButton':'loginButton'] }}
 		>
 			{children}
 		</PaperButton>

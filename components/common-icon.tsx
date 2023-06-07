@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons/build/Icons';
 import { View } from 'react-native';

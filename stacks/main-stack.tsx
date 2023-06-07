@@ -7,10 +7,11 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../data/redux/store';
 import Info from '../screens/info';
 import Subs from "../screens/Subs";
-
+import AdminList from '../screens/admin/admins';
+import Schedule from '../screens/schedule';
 const Stack = createNativeStackNavigator();
 const MainStack = () => {
-    const { headerShown } = useSelector((state: RootState) => state.menu);
+    const  headerShown  = useSelector((state: RootState) => state.menu.headerShown);
 	console.log(' headerShown ', headerShown);
   return (
     <Stack.Navigator
@@ -34,6 +35,8 @@ const MainStack = () => {
 		 />
 		<Stack.Screen name='Info' component={Info} />
 		<Stack.Screen name='Subs' component={Subs} />
+		<Stack.Screen name='Schedule' component={Schedule} />
+		<Stack.Screen name='Admins' component={AdminList} />
 		<Stack.Screen name='Appointment List' component={AddPost} />
 		
 	</Stack.Navigator>

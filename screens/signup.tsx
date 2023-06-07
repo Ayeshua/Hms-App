@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
 	KeyboardAvoidingView,
@@ -10,9 +10,6 @@ import {
 } from 'react-native';
 import { Text, TextInput, Title } from 'react-native-paper';
 
-import { Dropdown } from 'react-native-element-dropdown';
-import { CATEGORY } from '../constants';
-
 import AvatarIcon from '../components/avatar-icon';
 import Button from '../components/buttons/custom-button';
 import LayoutWrapper from '../components/layout-wrapper';
@@ -20,16 +17,15 @@ import ConfirmationModal from '../components/dialog/confirmation';
 import ErrorBox from '../components/errorBox';
 
 import { useAuth } from '../hooks/auth/useAuth';
-import { screenStyles } from '../styles';
 import { colors } from '../theme/colors';
 import { isPasswordEqualConfirmPassword } from '../utils/isConfPasswordEqual';
 import { useStore } from '../hooks/use-store';
-import { useFunc } from '../hooks/functions/useFunc';
+import { cloudFunc } from '../hooks/functions/useFunc';
 import { useMe } from '../hooks/useMe';
 
 export const SignUp = ({ navigation }: any) => {
 	const { _signUp, _login } = useAuth();
-	const { callFunc } = useFunc();
+	const { callFunc } = cloudFunc();
 	const { addModData } = useStore();
 	const { _updateUser } = useMe();
 	const [visible, setVisible] = useState<boolean>(false);
@@ -286,8 +282,8 @@ export const SignUp = ({ navigation }: any) => {
 											setSigningUp(true);
 											const { user } = await callFunc(data, 'regUser');
 											if (user) {
-												await _login({ email, password });
-												saveCallback();
+												const bool= await _login({ email, password });
+												setSigningUp(bool);												saveCallback();
 											} else {
 												_signUp(email, password, data, signupCallback);
 											}

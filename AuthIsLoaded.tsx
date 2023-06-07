@@ -1,4 +1,4 @@
-import React,{ useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import auth from '@react-native-firebase/auth';
 import { setUser } from './data/redux/slices/login';
 
@@ -7,15 +7,23 @@ import { View } from 'react-native';
 import { RootState } from './data/redux/store';
 import { useStore } from './hooks/use-store';
 import { pick } from 'lodash';
+import { DateTimeFormat } from './utils/date-formatter';
+import { 
+	setAppointments, 
+	setCalendarData, 
+	setListItems 
+} from './data/redux/slices/entities';
+import useFBDocs from './hooks/use-store/useFBDocs';
 //import useFBDocs from './hooks/useFBDocs';
 
 //import { signup, saveUserToFirestore, signout } from '../actions';
 function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
-	const { user } = useSelector((state: RootState) => state.login);
-	const { reAuth } = user;
+	const  reAuth  = useSelector((state: RootState) => state.login.user.reAuth);
 	console.log('user ', reAuth, ' appIsReady ', appIsReady);
 	const { queryDoc } = useStore();
 	const dispatch = useDispatch();
+	const searchData = useRef<any>();
+
 	// Handle user state changes
 	const onAuthStateChangedFunc = (currentUser: any) => {
 		console.log('currentUser ', currentUser);
@@ -25,10 +33,17 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 			currentUser.getIdTokenResult(true).then(async(idTokenResult: any) => {
 				const { 
 					categoryId,
-					status 
+					status ,
+					role={},
 				} = idTokenResult.claims;
 				console.log('currentUser idTokenResult.claims ',idTokenResult.claims);
-				
+				/* if(role.Registrar){
+					searchData.current={
+						path: `Doctors`,
+						boolValue: { value: `roleVal`, key: true },
+						origin:1
+					};
+				} */
 				/* const res= await callFunc({ email:currentUser.email, payload:{'status':1} }, 'addCustom');
 				console.log('claim res ',res); */
 				const userId=currentUser.uid
@@ -38,24 +53,39 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 					...payload, 
 					...pick(currentUser, ['uid', 'emailVerified', 'email']),
 					reAuth,
+					...role,
 					status,
 					categoryId,
 					userId
 				}));
 			});
 		} else {
-			//dispatch(setCurrentMeter(null))
+			searchData.current=undefined
 
 			dispatch(
 				setUser({
-					reAuth
+					reAuth,
+					updatedAt:new Date().getMilliseconds() 
 				}),
 			);
+			dispatch(setAppointments({
+				updatedAt:new Date().getMilliseconds() 
+			}))
+			dispatch(setCalendarData({arr:[],updatedAt:new Date().getMilliseconds()}))
+
+			dispatch(setListItems({
+				data:{[DateTimeFormat(new Date(),'yyyy-MM-dd')]:[]},
+				updatedAt:new Date().getMilliseconds() 
+			}))
 		}
 	};
+	const callback=useCallback(()=>{
+
+	},[])
+	useFBDocs(searchData.current, callback);
 
 	useEffect(() => {
-		const subscriber = auth().onAuthStateChanged(onAuthStateChangedFunc);
+		const subscriber = auth().onUserChanged(onAuthStateChangedFunc);
 		return subscriber; // unsubscribe on unmount
 	}, []);
 
@@ -69,25 +99,6 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 			await SplashScreen.hideAsync();
 		}
 	}, [appIsReady, reAuth]);
-
-	/* const handleDynamicLink = (link) => {
-		console.log('onLink ', link);
-		if (link?.url) {
-			console.log('onLink .url ', link.url);
-			dispatch(setDlink(link.url));
-		}
-	};
-
-	useEffect(() => {
-		dynamicLinks().getInitialLink().then(handleDynamicLink);
-		const unsubscribe = dynamicLinks().onLink(handleDynamicLink);
-		return () => unsubscribe();
-	}, [handleDynamicLink]); */
-	/* const callback = useCallback((data: any) => {
-		console.log('data meters ', data.length);
-
-	}, []); */
-	//useFBDocs(searchData, callback);
 
 	if (!appIsReady || !reAuth) {
 		return null;

@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { screenStyles } from '../styles';
@@ -18,8 +18,7 @@ const TopLabel = ({
 	backgroundColor = colors.coolGray2,
 	height = 22,
 	pos,
-}) => {
-	return (
+}) => (
 		<View
 			style={{
 				...screenStyles.row,
@@ -55,6 +54,5 @@ const TopLabel = ({
 			</View>
 		</View>
 	);
-};
 
 export default memo(TopLabel);

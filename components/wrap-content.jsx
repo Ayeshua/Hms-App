@@ -1,9 +1,8 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 import { screenStyles } from '../styles';
 
-const WrapContent = ({ children, width, flexWrap }) => {
-	return (
+const WrapContent = ({ children, width, flexWrap }) => (
 		<View
 			style={{
 				...screenStyles.row,
@@ -17,6 +16,5 @@ const WrapContent = ({ children, width, flexWrap }) => {
 			{children}
 		</View>
 	);
-};
 
 export default memo(WrapContent);

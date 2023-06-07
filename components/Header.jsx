@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Title } from 'react-native-paper';
 import { Image, View } from 'react-native';
 import { screenStyles } from '../styles';

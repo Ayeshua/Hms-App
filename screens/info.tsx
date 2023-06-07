@@ -1,10 +1,10 @@
 
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NestedObjToInfoString, appendText } from '../utils/renderText';
 import GridView from '../components/GridView';
-import { useSelector } from 'react-redux';
-import { backArr, profileInfo, subStatus } from '../constants';
+import { useDispatch, useSelector } from 'react-redux';
+import { backArr, inputBasePayload, profileInfo, subStatus } from '../constants';
 import { reorder } from '../utils/reorder';
 import { useFocusEffect } from '@react-navigation/native';
 import useNavOptions from '../hooks/useNavOptions';
@@ -12,6 +12,11 @@ import { isEmpty,omit,startCase } from "lodash";
 import { useStore } from '../hooks/use-store';
 import { DateTimeFormat } from '../utils/date-formatter';
 import ConfirmationModal from '../components/dialog/confirmation';
+import { customDateEqual } from '../utils/custom-compare';
+import { setCurrentInfo } from '../data/redux/slices/entities';
+import { useInputSheet } from '../hooks/useInputSheet';
+import randomUUUID from '../utils/UUUID';
+import { Linking } from 'react-native';
 
 const Info = ({ route: { params, name }, navigation }) => {
 	const {
@@ -22,12 +27,20 @@ const Info = ({ route: { params, name }, navigation }) => {
 		infoId,
 		from,
 	} = params || {};
-	console.log('info status ',userId,' categoryId ',categoryId);
-	const { user } = useSelector(({ login }) => login);
-	const {categoryId:catId,userId:currentId}=user
-	const initData=screenName==="Profile"&&!userId?user:info
-	const [currentData, setCurrentData] = useState<any>({...initData,payload:[]});
-	const [isSpinner, setSpinner] = useState<boolean>(isEmpty(initData));
+	const user  = useSelector(({ login }) => login.user,customDateEqual);
+	const {Doctor, Registrar,userId:currentId}=user
+	const catId=Doctor?'Doctor':Registrar?"Registrar":"Patient"
+	console.log('info status ',userId,' categoryId ',categoryId,' catId ',catId);
+	const currentInfo  = useSelector(({ entity }) => entity.currentInfo[screenName],customDateEqual);
+	console.log('currentInfo ',currentInfo);
+	const {openShareInput}=useInputSheet()
+
+	const dispatch=useDispatch()
+	const currentData=useMemo(()=>{
+	    return screenName==="Profile"&&!userId?user:currentInfo
+	},[currentInfo,user])
+	//const [currentData, setCurrentData] = useState<any>({...initData,payload:[]});
+	const [isSpinner, setSpinner] = useState<boolean>(screenName==="Profile"&&!userId);
 	const { queryDoc,addModData } = useStore();
 	const entityRef=useRef<any>(new Map())
 	const [items, setTopItem] = useState<any>()
@@ -66,15 +79,44 @@ const Info = ({ route: { params, name }, navigation }) => {
 				'Payment'
 			  );
 		  }
-		  setCurrentData((value:{})=>{
-			return {...value,status}
-		});
+		  dispatch(setCurrentInfo({[screenName]:{
+			...currentData,
+			status,
+			updatedAt:new Date().getTime() 
+		}}))
+		  
 		  menuOpt()  
 	}
 	const menuOpt = useCallback((msg?: any) => {
 		setmodalMsg(msg);
 		setShowConfirmationModal(!!msg);
 	}, []);
+	const onListClick = async ({value,value1}) => {
+		const prescriptionId=randomUUUID()
+		const {appointmentId,doctorId}=currentData
+
+		await addModData(
+			{
+				prescriptionId,
+				status:2
+			},
+			appointmentId,
+			'Appointment'
+		  );
+		  await addModData(
+			{
+				prescriptionId,
+				details:value,
+				amount: Number(value1),
+				currency:'ZMW',
+				doctorId,
+				status:1,
+				timestamp:new Date()
+			},
+			prescriptionId,
+			'Prescription'
+		  );
+	}
 	const onClickFun = ({ index }) => {
 		const {status,title,message,flag}=items.payload[index]
 		if(screenName==='Profile'){
@@ -97,6 +139,33 @@ const Info = ({ route: { params, name }, navigation }) => {
 						status,
 						flag,
 					})	
+				}else if(flag===1){
+					dispatch(setCurrentInfo({Appointment:{
+						...currentData,
+						currentDate:{
+							timestamp: currentData.schedule,
+
+						},
+						updatedAt:new Date().getTime() 
+					}}))
+					navigation.navigate('Schedule',{title})
+				}else if(flag===4){
+					openShareInput({
+						...inputBasePayload,
+						title: 'Prescription',
+						btnLabel:'prescribe',
+						height:100,
+						value: '',
+						value1: '',
+						label1:'Amount (ZMW)',
+						require1:true,
+						keyboardType1:'number',
+						onListClick
+					})
+				}else if(flag===2){
+					const {link}=currentData
+
+					Linking.openURL(link)
 				}
 			}
 		}
@@ -191,7 +260,8 @@ const Info = ({ route: { params, name }, navigation }) => {
 							details,
 							ref: screenName==='Appointment'?null:`{{${prescriptionId||appointmentId}:${screenName==='Payment'?details:'Appointment'}}}\n`,
 							link,
-							scheduleDate:scheduleDate?`📅~${DateTimeFormat(scheduleDate)}~`:null,
+							scheduleDate:scheduleDate?`📅~${DateTimeFormat(scheduleDate,'dd MMM yyyy')}~ `:null,
+							time: scheduleDate?`@ ${DateTimeFormat(scheduleDate,'HH:mm')}`:null,
 							status:status!==undefined?'Status':null,
 							statusVal:status!==undefined?subStatus[screenName].msg[status]:null,
 							name:currency?`${currency}${amount}`:null,
@@ -230,7 +300,8 @@ const Info = ({ route: { params, name }, navigation }) => {
 		}, [screenName, currentData,catId,categoryId]),
 	);
 
-	useEffect(() => {
+	
+		useEffect(() => {
 		(async()=>{
 			let data={}
 			if (userId) {
@@ -246,26 +317,29 @@ const Info = ({ route: { params, name }, navigation }) => {
 			}
 			if(screenName!=='Profile'){
 				if(noInfo){
-					const payload= await queryDoc(`${screenName}/${infoId}`);
+					const payload:any= await queryDoc(`${screenName}/${infoId}`);
 	
-					data={...data,...payload,timestamp:payload?.timestamp.toString()}
+					data={...data,...payload}
 				}
 				const otherInfo=['Doctor','Registrar']
 				for (let index = 0; index < otherInfo.length; index++) {
 					const element = otherInfo[index];
 					const currentId=data[`${element.toLowerCase()}Id`]
 					if(currentId){
-						const payload= await queryDoc(`${element}/${currentId}`);
+						const payload:any= await queryDoc(`${element}/${currentId}`);
 						const {name,speciality}=payload
-						entityRef.current.set(currentId,{...payload,userId:currentId,timestamp:timestamp.toString()})
+						entityRef.current.set(currentId,{...payload,userId:currentId})
 	
 						data={...data,[element]:appendText(['[',startCase(name),':',currentId,']']),speciality}
 					}
 				}
 			}
-			setCurrentData((value:{})=>{
-				return {...value,...data}
-			});
+			dispatch(setCurrentInfo({[screenName]:{
+				...currentData,
+				...data,
+				updatedAt:new Date().getTime() 
+			}}))
+			
 		})()
 	}, [userId, screenName,noInfo,infoId]);
 	useNavOptions(

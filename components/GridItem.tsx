@@ -12,6 +12,7 @@ import { screenStyles } from '../styles';
 import { NestedObjToInfoString, renderText } from '../utils/renderText';
 import { fbQueries } from '../constants';
 import { DateTimeFormat } from '../utils/date-formatter';
+import IconHolder from './icon-holder';
 
 const GridItem = ({
 	payload,
@@ -36,7 +37,7 @@ const GridItem = ({
 		color?: string;
 		profileUrl?: string;
 		details?: string;
-	
+		subTitle?:any;
 		size?: number;
 		info?: string;
 		backgroundColor?: string;
@@ -66,6 +67,7 @@ const GridItem = ({
 		title,
 		color=colors.secondary,
 		info,
+		subTitle,
 		backgroundColor = '#fff',
 		...rest
 	}=payload
@@ -75,7 +77,8 @@ const GridItem = ({
 		detailStr=NestedObjToInfoString({ 
 			agender:agender==='timestamp'?`${DateTimeFormat(rest[agender])}`:rest[agender], 
 			name:subname?`${rest[subname]}${rest[name]}`:rest[name], 
-			body:rest[body],
+			body:body==='email'?null:rest[body],
+			email:body!=='email'?null:rest[body],
 			id:id?`~${rest[id]}~`:null
 		})
 	}
@@ -162,7 +165,41 @@ const GridItem = ({
 					{detailStr}
 				</ParsedText>
 			)}
-			
+			{subTitle && (
+				<View
+					style={{
+						width: orientation === 'row' ? '100%' : '80%',
+						...screenStyles.row,
+						paddingHorizontal: 10,
+						alignContent: 'center',
+					}}
+				>
+					<Text
+						style={{ color: colors.silver }}
+						numberOfLines={1}
+						ellipsizeMode='tail'
+						variant='labelSmall'
+					>
+						{subTitle.title}
+					</Text>
+					<IconHolder
+						{...{
+							payload: host
+								? [
+									{
+										...subTitle.payload[0],
+										name: subTitle.payload[0].name,
+										//color: sel ? colors.primary : colors.TRANSPARENT,
+									},
+								  ]
+								: subTitle.payload,
+							width: subTitle.width,
+						}}
+						//width={60}
+						onClick={(num) => onClickFun({ index, num })}
+					/>
+				</View>
+			)}
 		</View>
 	</TouchableOpacity>
 )};

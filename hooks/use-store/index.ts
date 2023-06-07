@@ -13,14 +13,21 @@ export const useStore = () => {
 		.then((doc) => {
 			if (doc.exists) {
 				const data = doc.data();
-				console.log('queryDoc data ', data);
-
+				const {timestamp,updatedAt}=data
 				return {
 					...data,
 					id:doc.id,
-					timestamp: data.timestamp
-						? data.timestamp.toMillis()
+					timestamp: timestamp
+						? timestamp.toMillis()
 						: null,
+						updatedAt:
+					updatedAt &&
+					typeof updatedAt.toDate === 'function'
+						? updatedAt.toMillis()
+						: timestamp &&
+						typeof timestamp.toDate === 'function'
+							? timestamp.toMillis()
+							: null,
 				};
 			} else {
 				return {};
@@ -30,6 +37,23 @@ export const useStore = () => {
 			console.log('DocError', e);
 			return {};
 		}),[]);
+	const queryCollections =useCallback(async(
+		number:string, userId:string
+	) => {
+		
+		const q= await firestore().collection('Registrar')
+		.where('idNumber','==',number)
+		.where('registrarId','!=',userId).get()
+		
+		const q1= await firestore().collection('Doctor')
+		.where('idNumber','==',number)
+		.where('doctorId','!=',userId).get()
+
+		const q2= await firestore().collection('Patient')
+		.where('idNumber','==',number)
+		.where('patientId','!=',userId).get()
+		return q.size+q1.size+q2.size
+	},[]);
 	const deleteFBDocs = async (docIds: string[], callback?: () => void) => {
 		console.log('docIds ', docIds.length);
 
@@ -77,5 +101,6 @@ export const useStore = () => {
 		addModData,
 		deleteFBDocs,
 		queryDoc,
+		queryCollections
 	};
 };

@@ -1,11 +1,10 @@
-import React,{ useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
 
-import { useSelector } from 'react-redux';
-import { RootState } from '../data/redux/store';
+import { shallowEqual, useSelector } from 'react-redux';
 import useNavOptions from '../hooks/useNavOptions';
 import { useAuth } from '../hooks/auth/useAuth';
 import ConfirmationModal from '../components/dialog/confirmation';
@@ -13,7 +12,7 @@ import {  LOGO_URL } from '../constants';
 import InputModal from '../components/dialog/text-area-dialog';
 import { SheetManager } from 'react-native-actions-sheet';
 
-import { useFunc } from '../hooks/functions/useFunc';
+import { cloudFunc } from '../hooks/functions/useFunc';
 
 import { startCase } from 'lodash';
 
@@ -27,18 +26,20 @@ import Subs from '../screens/Subs';
 const Tab = createBottomTabNavigator();
 
 const AppBottomNavigation = ({ navigation }) => {
-	const {
-		user: { categoryId, name: username, userId, profileUrl, email },
-	} = useSelector((state: RootState) => state.login);
+	const { Doctor, Registrar, username, userId, profileUrl, email } = useSelector(({login:{
+		user: { Doctor, Registrar, name: username, userId, profileUrl, email },
+	}}) => {
+		return { Doctor, Registrar, username, userId, profileUrl, email }
+	},shallowEqual);
 	const [showInputModal, setShowInputModal] = useState<boolean>(false);
 	const [name, setname] = useState<string>();
-	
+	const isPatient=!Doctor&&!Registrar
 	const [inputMsg, setinputMsg] = useState<any>();
 	const [showConfirmationModal, setShowConfirmationModal] =
 		useState<boolean>(false);
 	const [modalMsg, setmodalMsg] = useState<any>();
 	const { _logOut } = useAuth();
-	const { shareDLink } = useFunc();
+	const { shareDLink } = cloudFunc();
 
 
 	const menuOpt = useCallback((msg?: any) => {
@@ -83,19 +84,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					onConfirmText: title,
 				});
 			} else {
-				if (name === 'Staff') {
-					inputPayload({
-						title: 'Add',
-						value: '',
-						required: true,
-						keyboardType: 'username',
-						label: 'janedoe@example.com, johndoe@example',
-						message: 'Enter email(s); seperated by comas',
-						height: 100,
-						onConfirmText: 'Add',
-						onDismissText: 'Close',
-					});
-				} else if (name === 'Profile') {
+				if (name === 'Profile') {
 					navigation.navigate('ProStack', { screen: 'Edit Profile' });
 				} else {
 					menuOpt({
@@ -108,98 +97,9 @@ const AppBottomNavigation = ({ navigation }) => {
 		},
 		[name, navigation, inputPayload],
 	);
-	//const { dLink } = useSelector(({ menu }) => menu);
-	
-	/* useEffect(() => {
-		if (dLink) {
-			let regex = /[?&]([^=#]+)=([^&#]*)/g,
-				params = {},
-				match: any;
-			while ((match = regex.exec(dLink))) {
-				params[match[1]] = match[2];
-			}
-			console.log('params ', params);
-
-			const { id, type } = params;
-			console.log('id ', id, ' type ', type);
-
-			dispatch(setDlink(null));
-			if (type === '0') {
-				const { matrix, saved, _id } = currentTemplate || {};
-				if (_id && _id !== id) {
-					if (matrix && !saved) {
-						menuOpt({
-							title: 'Proccessing',
-							message: 'wait...',
-							dismissable: false,
-						});
-						console.log('screen shot start');
-
-						const imgArr = getMatArr(matrix);
-						console.log('imgArr ', imgArr);
-						if (imgArr.length > 0) {
-							uploadFile(
-								imgArr,
-								currentTemplate,
-								setProgCallback,
-								loopFileCallack,
-							);
-						} else {
-							loopFileCallack(currentTemplate);
-						}
-						menuOpt(null);
-					}
-					dispatch(setCurrentTemplate(null));
-					dispatch(setHtml('Loading...'));
-				}
-				dispatch(setSelElement(null));
-				dispatch(setSelTool(null));
-				navigation.navigate('Temp', {
-					screen: 'ViewTemplate',
-					params: { path: `users/${userId}/recieved/${id}` },
-				});
-			}
-		}
-	}, [dLink, loopFileCallack, menuOpt, setProgCallback]); */
-	const handleAdd = async (emails: string) => {
-		menuOpt({
-			title: 'Inviting...',
-			message: 'wait...',
-			dismissable: false,
-		});
-
-		const subject = `Staff Member Invite`;
-
-		const payload = {
-			profileUrl,
-			username,
-			userId,
-			email,
-			url: 'https://firebasestorage.googleapis.com/v0/b/HmsApp-d4946.appspot.com/o/usericon.jpg?alt=media&token=39f9c7c3-031a-44ac-ae77-02b1236aafae',
-		};
-		const path = `users/${userId}/staff`;
-		const body = `You have been added as staff member of ${startCase(
-			username,
-		)}`;
-		const message = await shareDLink(
-			emails,
-			null,
-			body,
-			subject,
-			path,
-			payload,
-			LOGO_URL,
-		);
-
-		menuOpt({
-			title: 'Invite',
-			message,
-			onConfirmText: 'Okay',
-		});
-	};
 	useNavOptions(
 		navigation,
-		name === 'New Appointment'?0:name !== 'Profile' ? 30 : 60,
+		name === 'Profile' ? 60 : 0,
 		icons,
 		iconPress,
 		name !== 'Appointments'
@@ -216,9 +116,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					visible={showInputModal}
 					onConfirm={(txt: string) => {
 						setinputMsg(null);
-						if (inputMsg?.onConfirmText === 'Add') {
-							handleAdd(txt);
-						}
+						
 					}}
 					onDismiss={() => {
 						setinputMsg(null);
@@ -277,7 +175,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					name='Appointments'
 					component={Home}
 				/>
-				{(categoryId==='Registrar'||categoryId==='Doctor')&&<Tab.Screen
+				{(Registrar||Doctor)&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='emoticon-sick-outline' color={focused?colors.tertiary:colors.silver} size={25} />
@@ -288,7 +186,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					name='Patients'
 					component={Subs}
 				/>}
-				{(categoryId==='Patient')&&<Tab.Screen
+				{isPatient&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='medical-bag' color={focused?colors.tertiary:colors.silver} size={25} />
@@ -299,7 +197,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					name='Prescriptions'
 					component={Subs}
 				/>}
-				{(categoryId==='Patient')&&<Tab.Screen
+				{isPatient&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<CommonIcon
@@ -326,7 +224,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					name='New Appointment'
 					component={NewAppointment}
 				/>}
-				{(categoryId==='Registrar'||categoryId==='Patient')&&<Tab.Screen
+				{(Registrar||isPatient)&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='cash-multiple' color={focused?colors.tertiary:colors.silver} size={25} />
@@ -337,7 +235,7 @@ const AppBottomNavigation = ({ navigation }) => {
 					name='Payments'
 					component={Subs}
 				/>}
-				{(categoryId==='Registrar')&&<Tab.Screen
+				{Registrar&&<Tab.Screen
 					options={{
 						tabBarIcon: ({ focused }) => (
 							<MaterialCommunityIcons name='account-group-outline' color={focused?colors.tertiary:colors.silver} size={25} />
@@ -345,7 +243,7 @@ const AppBottomNavigation = ({ navigation }) => {
 						            tabBarShowLabel: false,
 
 					}}
-					name='Staff'
+					name='Admin'
 					component={Admin}
 				/>}
 				

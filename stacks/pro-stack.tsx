@@ -3,9 +3,7 @@ import ImageBoarding from '../screens/account/image-boarding';
 import Profile from '../screens/account/profile';
 
 const Stack = createNativeStackNavigator();
-export const ProStack = ({ status }) => {
-	
-	return (
+export const ProStack = ({ status }) => (
 		<Stack.Navigator
 			screenOptions={{
 				contentStyle: {
@@ -27,4 +25,4 @@ export const ProStack = ({ status }) => {
 			/>
 		</Stack.Navigator>
 	);
-};
+
