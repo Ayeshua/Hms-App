@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import {  useSelector } from 'react-redux';
 import GridView from '../components/GridView';
 import useNavOptions from '../hooks/useNavOptions';
 import useFBDocs from '../hooks/use-store/useFBDocs';
 import { fbQueries } from '../constants';
 import { unionBy } from "lodash";
 import { customDateEqual } from '../utils/custom-compare';
-import { setCurrentInfo } from '../data/redux/slices/entities';
 
 const Subs = ({ navigation,route:{name,params} }) => {
 	const {
@@ -22,15 +21,15 @@ const Subs = ({ navigation,route:{name,params} }) => {
 	const [entities, setEntities] = useState<any[]>([]);
 	const [searchEntities, setSearchEntities] = useState<{}|null>();
 	const lastDocRef = useRef();
-	const dispatch=useDispatch()
 	const onClickFun = ({ index }:{index:number}) => {
 		const entity=entities[index]
 		const {pathName,cat}=fbQueries[screenName]
-		dispatch(setCurrentInfo({[pathName]:{
+		/* dispatch(setCurrentInfo({[pathName]:{
 			...entity,
 			updatedAt:new Date().getTime() 
-		}}))
+		}})) */
 		navigation.navigate('Info',{
+			info:entity,
 			userId:entity[`${cat.toLowerCase()}Id`],
 			categoryId:cat,
 			screenName:pathName

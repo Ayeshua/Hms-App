@@ -3,18 +3,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NestedObjToInfoString, appendText } from '../utils/renderText';
 import GridView from '../components/GridView';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import firestore from '@react-native-firebase/firestore';
 
 import { backArr, inputBasePayload, profileInfo, subStatus } from '../constants';
 import { reorder } from '../utils/reorder';
 import { useFocusEffect } from '@react-navigation/native';
 import useNavOptions from '../hooks/useNavOptions';
-import { isEmpty,omit,startCase } from "lodash";
+import { omit,startCase } from "lodash";
 import { useStore } from '../hooks/use-store';
 import { DateTimeFormat } from '../utils/date-formatter';
 import ConfirmationModal from '../components/dialog/confirmation';
 import { customDateEqual } from '../utils/custom-compare';
-import { setCurrentInfo } from '../data/redux/slices/entities';
 import { useInputSheet } from '../hooks/useInputSheet';
 import randomUUUID from '../utils/UUUID';
 
@@ -31,14 +31,16 @@ const Info = ({ route: { params, name }, navigation }) => {
 	const {Doctor, Registrar,userId:currentId}=user
 	const catId=Doctor?'Doctor':Registrar?"Registrar":"Patient"
 	console.log('info status ',userId,' categoryId ',categoryId,' catId ',catId);
-	const currentInfo  = useSelector(({ entity }) => entity.currentInfo[screenName],customDateEqual);
+	const [currentInfo,setCurrentInfo]=useState(info)
+	//const currentInfo  = useSelector(({ entity }) => entity.currentInfo[screenName],customDateEqual);
 	console.log('currentInfo ',currentInfo);
 	const {openShareInput}=useInputSheet()
 	const [link, setLink] = useState()
-	const dispatch=useDispatch()
+	//const dispatch=useDispatch()
 	const currentData=useMemo(()=>{
 	    return screenName==="Profile"&&!userId?user:currentInfo
 	},[currentInfo,user])
+	const {link:linked,status}=currentData
 	//const [currentData, setCurrentData] = useState<any>({...initData,payload:[]});
 	const [isSpinner, setSpinner] = useState<boolean>(screenName==="Profile"&&!userId);
 	const { queryDoc,addModData } = useStore();
@@ -46,7 +48,6 @@ const Info = ({ route: { params, name }, navigation }) => {
 	const [items, setTopItem] = useState<any>()
 	const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);
 	const [modalMsg, setmodalMsg] = useState<any>();
-	const noInfo=isEmpty(info)
 
 	async function saveInfo() {
 		const {flag,status}=modalMsg
@@ -79,11 +80,10 @@ const Info = ({ route: { params, name }, navigation }) => {
 				'Payment'
 			  );
 		  }
-		  dispatch(setCurrentInfo({[screenName]:{
-			...currentData,
+		  setCurrentInfo((prev)=>({
+			...prev,
 			status,
-			updatedAt:new Date().getTime() 
-		}}))
+		}))
 		  
 		  menuOpt()  
 	}
@@ -140,15 +140,13 @@ const Info = ({ route: { params, name }, navigation }) => {
 						flag,
 					})	
 				}else if(flag===1){
-					dispatch(setCurrentInfo({Appointment:{
+					navigation.navigate('Schedule',{title,currentData:{
 						...currentData,
 						currentDate:{
 							timestamp: currentData.schedule,
 
 						},
-						updatedAt:new Date().getTime() 
-					}}))
-					navigation.navigate('Schedule',{title})
+					}})
 				}else if(flag===4){
 					openShareInput({
 						...inputBasePayload,
@@ -304,24 +302,72 @@ const Info = ({ route: { params, name }, navigation }) => {
 	
 		useEffect(() => {
 		(async()=>{
-			let data={}
 			if (userId) {
 				
 				const payload= await queryDoc(`${categoryId}/${userId}`);
-				data={
-					    ...data,
-					    ...omit(payload,screenName!=='Profile'?['status','timestamp']:''),
-						userId:payload[`${categoryId.toLowerCase()}Id`],
-						
-					}
+				
 				entityRef.current.set(userId,payload)
+					setCurrentInfo((prev)=>({
+						...prev,
+						...omit(payload,screenName!=='Profile'?['status','timestamp']:''),
+					    userId:payload[`${categoryId.toLowerCase()}Id`],
+					}))
 			}
-			if(screenName!=='Profile'){
-				if(noInfo){
-					const payload:any= await queryDoc(`${screenName}/${infoId}`);
+		
+			
+			
+			
+		})()
+	}, [userId, screenName]);
+	useEffect(() => {
+		if(link&&catId==='Patient'&&status===2){
+			setLink(linked.includes('http')?linked:`https://${linked}`)
+		}
+	}, [linked,catId,status])
 	
-					data={...data,...payload}
-				}
+	useEffect(() => {
+		if(screenName==='Profile')return
+		const unsub = firestore()
+		.doc(`${screenName}/${infoId}`)
+		.onSnapshot(async(documentSnapshot)=>{
+			if(documentSnapshot.exists){
+				const doc=documentSnapshot.data()
+				const {timestamp,scheduleDate,bookedDate,updatedAt}=doc
+				const payload = {
+					...doc,
+					id:documentSnapshot.id,
+					timestamp: timestamp
+						? timestamp.toMillis()
+						: null,
+						scheduleDate:
+					scheduleDate &&
+					typeof scheduleDate.toDate === 'function'
+						? scheduleDate.toMillis()
+						:  timestamp &&
+						typeof timestamp.toDate === 'function'
+							? timestamp.toMillis()
+							: null,
+					updatedAt:
+						updatedAt &&
+						typeof updatedAt.toDate === 'function'
+							? updatedAt.toMillis()
+							: timestamp &&
+							typeof timestamp.toDate === 'function'
+								? timestamp.toMillis()
+								: null,
+					bookedDate:
+						bookedDate &&
+						typeof bookedDate.toDate === 'function'
+							? bookedDate.toMillis()
+							: timestamp &&
+							typeof timestamp.toDate === 'function'
+								? timestamp.toMillis()
+								: null,
+							
+				};
+				let data
+				data={...data,...payload}
+			
 				const otherInfo=['Doctor','Registrar']
 				for (let index = 0; index < otherInfo.length; index++) {
 					const element = otherInfo[index];
@@ -338,19 +384,16 @@ const Info = ({ route: { params, name }, navigation }) => {
 						data={...data,[element]:appendText(['[',startCase(name),':',currentId,']']),speciality}
 					}
 				}
-			}
-			if(catId==='Patient'&&currentData.status===2){
-				const {link}=currentData
-				setLink(link.includes('http')?link:`https://${link}`)
-			}
-			dispatch(setCurrentInfo({[screenName]:{
-				...currentData,
-				...data,
-				updatedAt:new Date().getTime() 
-			}}))
-			
-		})()
-	}, [userId, screenName,noInfo,infoId]);
+				setCurrentInfo((prev)=>({
+					...prev,
+					...data,
+				}))
+				}
+		})
+	return () => {
+		unsub()
+	}
+	}, [screenName,infoId])
 	useNavOptions(
 		navigation,
 		from ? 30 : 0,

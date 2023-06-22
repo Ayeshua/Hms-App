@@ -65,17 +65,16 @@ function AuthIsLoaded({ children, appIsReady, SplashScreen }) {
 			dispatch(
 				setUser({
 					reAuth,
-					updatedAt:new Date().getMilliseconds() 
+					updatedAt:new Date().getTime() 
 				}),
 			);
 			dispatch(setAppointments({
-				updatedAt:new Date().getMilliseconds() 
+				updatedAt:new Date().getTime() 
 			}))
-			dispatch(setCalendarData({arr:[],updatedAt:new Date().getMilliseconds()}))
-
+			dispatch(setCalendarData({arr:[],updatedAt:new Date().getTime()}))
 			dispatch(setListItems({
 				data:{[DateTimeFormat(new Date(),'yyyy-MM-dd')]:[]},
-				updatedAt:new Date().getMilliseconds() 
+				updatedAt:new Date().getTime() 
 			}))
 		}
 	};

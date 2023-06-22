@@ -45,7 +45,7 @@ const useFBDocs = (form, callback) => {
 				}
 				q = q.orderBy('timestamp', 'desc');
 				if(timestamp1&&timestamp2){
-					const timestamp_prev =  firestore.Timestamp.fromDate(timestamp1);
+					const timestamp_prev = new  firestore.Timestamp.fromDate(timestamp1);
 					const timestamp_nxt = new firestore.Timestamp.fromDate(timestamp2);
 					q=q.where('timestamp', '>', timestamp_prev)
 					  	.where('timestamp', '<', timestamp_nxt)

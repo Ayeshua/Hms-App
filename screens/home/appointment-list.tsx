@@ -111,12 +111,14 @@ const Home = ({navigation,route:{params:{currentTimestamp,title}}}) => {
 			currentUser={Registrar:appendText(['[',startCase(name),':',userId,']'])}
 		}
 		dispatch(setCurrentInfo({Appointment:{
-			...appointment,
-			...currentUser,
+			
 			updatedAt:new Date().getTime() 
 		}}))
 		navigation.navigate('Info',{
-			
+			info:{
+				...appointment,
+			...currentUser,
+			},
 			userId:appointment.patientId,
 			categoryId:'Patient',
 			screenName:'Appointment'

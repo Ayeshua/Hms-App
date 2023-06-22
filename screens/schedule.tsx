@@ -2,12 +2,11 @@ import { useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View, ScrollView, Keyboard } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { shallowEqual,  useSelector } from 'react-redux';
 import { customDateEqual } from '../utils/custom-compare';
 import { useStore } from '../hooks/use-store';
 import useNavOptions from '../hooks/useNavOptions';
 import { colors } from '../theme/colors';
-import { setCurrentInfo } from '../data/redux/slices/entities';
 import ConfirmationModal from '../components/dialog/confirmation';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ErrorBox from '../components/errorBox';
@@ -24,8 +23,6 @@ import {
 	 getTime, 
 	getYear 
 } from 'date-fns';
-import { startCase } from "lodash";
-import { appendText } from '../utils/renderText';
 
 const icons = [
 	{
@@ -34,12 +31,12 @@ const icons = [
 		size: 23,
 	},
 ];
-const Schedule = ({ navigation,route:{params:{title}} }) => {
+const Schedule = ({ navigation,route:{params:{title,currentData}} }) => {
 	//const [files, setFiles] = useState<any>({});
 	const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);
 	const [modalMsg, setmodalMsg] = useState<any>();
 	const [timing, settiming] = useState<any>();
-	const dispatch = useDispatch();
+	//const dispatch = useDispatch();
 	const {Registrar,userId,name}  = useSelector(({ login:{user:{
 		Registrar,
 		userId,
@@ -48,7 +45,7 @@ const Schedule = ({ navigation,route:{params:{title}} }) => {
 		return {Registrar,userId,name}
 	},shallowEqual);
 
-	const currentData  = useSelector(({ entity }) => entity.currentInfo.Appointment,customDateEqual);
+	//const currentData  = useSelector(({ entity }) => entity.currentInfo.Appointment,customDateEqual);
 	const {arr:doctors}  = useSelector(({ entity }) => entity.Doctors,customDateEqual);
 
 
@@ -108,12 +105,12 @@ const Schedule = ({ navigation,route:{params:{title}} }) => {
 	const openDocList=async()=>{
 		console.log('show list ',doctors);
 		
-		const {item}= await SheetManager.show('flatlist-sheet', {
+		const {item}= (await SheetManager.show('flatlist-sheet', {
 			payload: {
 				profileInfo: doctors,
 				snapPoints: [100],
 			},
-		})||{};
+		})||{})as any;
 		if (item) {
 			setValue('doctor',item)
 		}
@@ -158,7 +155,7 @@ const Schedule = ({ navigation,route:{params:{title}} }) => {
 			  );
 		
 			setShowConfirmationModal(false);
-			dispatch(setCurrentInfo({Appointment:{
+			/* dispatch(setCurrentInfo({Appointment:{
 				...currentData,
 				...updateData,
 				Doctor:appendText(['[',startCase(docName),':',id,']']),
@@ -167,7 +164,7 @@ const Schedule = ({ navigation,route:{params:{title}} }) => {
 				bookedDate: new Date().getTime(),
 
 				updatedAt:new Date().getTime() 
-			}}))
+			}})) */
 			navigation.goBack()
 		})();
 	}, [addModData]);
